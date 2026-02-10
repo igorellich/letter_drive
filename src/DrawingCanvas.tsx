@@ -32,8 +32,8 @@ export const DrawingCanvas = forwardRef<HTMLCanvasElement, DrawingCanvasProps>(
       // Configure drawing settings
       context.lineCap = 'round'
       context.lineJoin = 'round'
-      context.lineWidth = 3
-      context.strokeStyle = '#ffffff'
+      context.lineWidth = 6
+      context.strokeStyle = '#00ffff'
 
       contextRef.current = context
 
@@ -53,6 +53,42 @@ export const DrawingCanvas = forwardRef<HTMLCanvasElement, DrawingCanvasProps>(
 
       return () => window.removeEventListener('resize', handleResize)
     }, [])
+
+    const drawLineWithGlow = (x1: number, y1: number, x2: number, y2: number) => {
+      if (!contextRef.current) return
+      const context = contextRef.current
+
+      const dotRadius = 8
+      const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+      const dotSpacing = 12
+      const dotCount = Math.ceil(distance / dotSpacing)
+
+      for (let i = 0; i <= dotCount; i++) {
+        const t = dotCount === 0 ? 0 : i / dotCount
+        const x = x1 + (x2 - x1) * t
+        const y = y1 + (y2 - y1) * t
+
+        // Draw glow layers around dot
+        for (let g = 8; g > 0; g--) {
+          context.fillStyle = `rgba(0, 255, 255, ${0.08 * (1 - g / 8)})`
+          context.beginPath()
+          context.arc(x, y, dotRadius + g * 2, 0, Math.PI * 2)
+          context.fill()
+        }
+
+        // Draw main cyan dot
+        context.fillStyle = '#00ffff'
+        context.beginPath()
+        context.arc(x, y, dotRadius, 0, Math.PI * 2)
+        context.fill()
+
+        // Draw white core
+        context.fillStyle = '#ffffff'
+        context.beginPath()
+        context.arc(x, y, dotRadius * 0.4, 0, Math.PI * 2)
+        context.fill()
+      }
+    }
 
     const startDrawing = (e: React.TouchEvent<HTMLCanvasElement>) => {
       const touch = e.touches[0]
@@ -81,13 +117,7 @@ export const DrawingCanvas = forwardRef<HTMLCanvasElement, DrawingCanvasProps>(
       )
       if (distance < 5) return
 
-      const context = contextRef.current
-
-      // Draw line from last point to current point
-      context.beginPath()
-      context.moveTo(lastPoint.x, lastPoint.y)
-      context.lineTo(currentPoint.x, currentPoint.y)
-      context.stroke()
+      drawLineWithGlow(lastPoint.x, lastPoint.y, currentPoint.x, currentPoint.y)
 
       lastPointRef.current = currentPoint
       pointsRef.current.push(currentPoint)
