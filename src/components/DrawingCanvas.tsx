@@ -33,7 +33,7 @@ export const DrawingCanvas = forwardRef<HTMLCanvasElement, DrawingCanvasProps>(
       context.lineCap = 'round'
       context.lineJoin = 'round'
       context.lineWidth = 6
-      context.strokeStyle = '#00ffff'
+      context.strokeStyle = '#3a3a3a'
 
       contextRef.current = context
 
@@ -68,24 +68,24 @@ export const DrawingCanvas = forwardRef<HTMLCanvasElement, DrawingCanvasProps>(
         const x = x1 + (x2 - x1) * t
         const y = y1 + (y2 - y1) * t
 
-        // Draw glow layers around dot
-        for (let g = 8; g > 0; g--) {
-          context.fillStyle = `rgba(0, 255, 255, ${0.08 * (1 - g / 8)})`
+        // Draw subtle shadow effect around track
+        for (let g = 6; g > 0; g--) {
+          context.fillStyle = `rgba(58, 58, 58, ${0.04 * (1 - g / 6)})`
           context.beginPath()
-          context.arc(x, y, dotRadius + g * 2, 0, Math.PI * 2)
+          context.arc(x, y, dotRadius + g * 1.5, 0, Math.PI * 2)
           context.fill()
         }
 
-        // Draw main cyan dot
-        context.fillStyle = '#00ffff'
+        // Draw main tire track (dark gray/brown)
+        context.fillStyle = '#3a3a3a'
         context.beginPath()
         context.arc(x, y, dotRadius, 0, Math.PI * 2)
         context.fill()
 
-        // Draw white core
-        context.fillStyle = '#ffffff'
+        // Draw inner track detail (slightly lighter)
+        context.fillStyle = '#555555'
         context.beginPath()
-        context.arc(x, y, dotRadius * 0.4, 0, Math.PI * 2)
+        context.arc(x, y, dotRadius * 0.6, 0, Math.PI * 2)
         context.fill()
       }
     }
@@ -193,3 +193,5 @@ export const DrawingCanvas = forwardRef<HTMLCanvasElement, DrawingCanvasProps>(
     )
   }
 )
+
+DrawingCanvas.displayName = 'DrawingCanvas'

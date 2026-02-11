@@ -8,6 +8,12 @@ interface Point {
   y: number
 }
 
+interface Item {
+  id: number
+  x: number
+  z: number
+}
+
 interface PlayerCubeProps {
   path?: Point[]
   onPathComplete?: () => void
@@ -16,20 +22,21 @@ interface PlayerCubeProps {
   onPickup?: (id: number) => void
 }
 
-interface Item {
-  id: number
-  x: number
-  z: number
-}
-
+/**
+ * PlayerCube component that follows drawn paths and collects items
+ * 
+ * The cube follows specified waypoints on a path drawn by the user,
+ * erases the drawn line as it travels, and detects collisions with items.
+ * When no path is active, it follows the user's pointer position.
+ */
 export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPickup }: PlayerCubeProps) => {
   const rb = useRef<RapierRigidBody>(null)
   const { camera } = useThree()
   const [pathIndex, setPathIndex] = useState(0)
   const [isFollowingPath, setIsFollowingPath] = useState(false)
   
-  // Вспомогательные объекты
-  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0) // Плоскость на уровне пола
+  // Helper objects for raycasting
+  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0) // Ground plane
   const raycaster = new THREE.Raycaster()
   const point = new THREE.Vector3()
 
@@ -40,8 +47,11 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
   const eraserRadius = 25 // Radius of eraser in pixels
   const lastErasedIndexRef = useRef(0)
   const pickedRef = useRef<Set<number>>(new Set())
-  const pickupRadius = 1.5 // world units
+  const pickupRadius = 6 // world units (increased for larger scaled objects)
 
+  /**
+   * Check if any items are within pickup radius and trigger pickup callback
+   */
   const checkPickups = (current: { x: number; y: number; z: number }) => {
     if (!items || !onPickup) return
     for (const item of items) {
@@ -56,6 +66,9 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
     }
   }
 
+  /**
+   * Erase canvas at a specific screen point
+   */
   const eraseAtPoint = (screenX: number, screenY: number) => {
     if (!canvas) return
 
@@ -71,6 +84,9 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
     )
   }
 
+  /**
+   * Erase along a line between two screen points
+   */
   const eraseAlongLine = (x1: number, y1: number, x2: number, y2: number) => {
     if (!canvas) return
 
@@ -87,16 +103,6 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
       const y = y1 + (y2 - y1) * t
       eraseAtPoint(x, y)
     }
-  }
-
-  const worldToScreen = (worldPos: THREE.Vector3): { x: number; y: number } | null => {
-    const screenPos = worldPos.clone()
-    screenPos.project(camera)
-
-    const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth
-    const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight
-
-    return { x, y }
   }
 
   useFrame((state) => {
@@ -194,10 +200,49 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
 
   return (
     <RigidBody ref={rb} type="kinematicPosition" colliders="cuboid">
-      <mesh castShadow>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="orange" />
-      </mesh>
+      <group scale={[4, 4, 4]}>
+        {/* Car body */}
+        <mesh castShadow position={[0, 0.3, 0]}>
+          <boxGeometry args={[0.8, 0.5, 1.2]} />
+          <meshStandardMaterial color="#c41e3a" roughness={0.6} metalness={0.3} />
+        </mesh>
+        
+        {/* Car roof/cabin */}
+        <mesh castShadow position={[0, 0.65, -0.1]}>
+          <boxGeometry args={[0.6, 0.35, 0.6]} />
+          <meshStandardMaterial color="#b01830" roughness={0.6} metalness={0.3} />
+        </mesh>
+        
+        {/* Front windshield */}
+        <mesh castShadow position={[0, 0.6, -0.5]}>
+          <planeGeometry args={[0.6, 0.3]} />
+          <meshStandardMaterial color="#87ceeb" roughness={0.2} metalness={0.8} />
+        </mesh>
+        
+        {/* Left wheel */}
+        <mesh castShadow position={[-0.5, 0.15, 0.35]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.15, 16]} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.1} />
+        </mesh>
+        
+        {/* Right wheel */}
+        <mesh castShadow position={[0.5, 0.15, 0.35]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.15, 16]} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.1} />
+        </mesh>
+        
+        {/* Back left wheel */}
+        <mesh castShadow position={[-0.5, 0.15, -0.35]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.15, 16]} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.1} />
+        </mesh>
+        
+        {/* Back right wheel */}
+        <mesh castShadow position={[0.5, 0.15, -0.35]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.15, 16]} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.1} />
+        </mesh>
+      </group>
     </RigidBody>
   )
 }

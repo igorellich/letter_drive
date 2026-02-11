@@ -1,12 +1,13 @@
 import { Canvas } from '@react-three/fiber'
 import { Physics, RigidBody } from '@react-three/rapier'
-import { PlayerCube } from './PlayerCube'
 import { Grid } from '@react-three/drei'
-import { DrawingCanvas } from './DrawingCanvas'
 import { useRef, useState } from 'react'
 import { CameraController } from './components/CameraController'
 import { ItemSpawner } from './components/ItemSpawner'
+import { PlayerCube } from './components/PlayerCube'
+import { DrawingCanvas } from './components/DrawingCanvas'
 import { useItemSpawner } from './hooks/useItemSpawner'
+import type { ViewportBounds } from './components/CameraController'
 
 interface Point {
   x: number
@@ -21,14 +22,16 @@ interface Point {
  */
 export default function App() {
   const [path, setPath] = useState<Point[]>([])
+  const [viewportBounds, setViewportBounds] = useState<ViewportBounds | undefined>(undefined)
   const canvasRef = useRef<any>(null)
 
   // Use the item spawner hook
   const { items, handlePickup } = useItemSpawner({
-    maxItems: 12,
+    maxItems: 5,
     spawnInterval: 2000,
     spawnRadius: 80,
     seedCount: 4,
+    viewportBounds,
   })
 
   const handlePathUpdate = (points: Point[]) => {
@@ -46,18 +49,24 @@ export default function App() {
     setPath([])
   }
 
+  // Determine plane size based on viewport or use default
+  const planeSize = viewportBounds
+    ? Math.max(viewportBounds.width, viewportBounds.height) + 4
+    : 100
+
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <Canvas shadows camera={{ position: [0, 80, 0], fov: 50 }}>
-        <ambientLight intensity={0.4} />
+        <ambientLight intensity={0.6} />
         <directionalLight
-          position={[0, 1000, 0]}
-          intensity={2.5}
+          position={[30, 100, 30]}
+          intensity={2}
           castShadow
           shadow-mapSize={[1024, 1024]}
+          color="#ffffff"
         />
 
-        <CameraController items={items} defaultHeight={80} />
+        <CameraController items={items} defaultHeight={80} onViewportChange={setViewportBounds} />
 
         <Physics>
           <PlayerCube
@@ -70,11 +79,11 @@ export default function App() {
 
           <RigidBody type="fixed" rotation={[-Math.PI / 2, 0, 0]}>
             <mesh receiveShadow>
-              <planeGeometry args={[100, 100]} />
+              <planeGeometry args={[planeSize, planeSize]} />
               <meshStandardMaterial
-                color="#1e1eda"
-                roughness={0.4}
-                metalness={0.1}
+                color="#2d5016"
+                roughness={0.9}
+                metalness={0}
               />
             </mesh>
           </RigidBody>
@@ -87,8 +96,8 @@ export default function App() {
             fadeStrength={5}
             cellSize={1}
             sectionSize={3}
-            sectionColor="#333"
-            cellColor="#222"
+            sectionColor="#1a3d0a"
+            cellColor="#0d2605"
           />
         </Physics>
       </Canvas>
