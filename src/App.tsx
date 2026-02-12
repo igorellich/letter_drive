@@ -6,6 +6,8 @@ import { CameraController } from './components/CameraController'
 import { ItemSpawner } from './components/ItemSpawner'
 import { PlayerCube } from './components/PlayerCube'
 import { DrawingCanvas } from './components/DrawingCanvas'
+import { FramerateCounter } from './components/FramerateCounter'
+import { FrameRateLimiter } from './components/FrameRateLimiter'
 import { useItemSpawner } from './hooks/useItemSpawner'
 import type { ViewportBounds } from './components/CameraController'
 
@@ -21,6 +23,9 @@ interface Point {
  * Manages game state: drawing path, spawned items, and cube interaction.
  */
 export default function App() {
+  const [frameCount, setFrameCount] = useState(0)
+  const [lastTime, setLastTime] = useState(0)
+  const [fps, setFps] = useState(0)
   const [path, setPath] = useState<Point[]>([])
   const [viewportBounds, setViewportBounds] = useState<ViewportBounds | undefined>(undefined)
   const canvasRef = useRef<any>(null)
@@ -56,7 +61,7 @@ export default function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <Canvas shadows camera={{ position: [0, 80, 0], fov: 50 }}>
+      <Canvas shadows gl={{ preserveDrawingBuffer: true }} camera={{ position: [0, 80, 0], fov: 50 }}>
         <ambientLight intensity={0.6} />
         <directionalLight
           position={[30, 100, 30]}
@@ -100,6 +105,7 @@ export default function App() {
             cellColor="#0d2605"
           />
         </Physics>
+        <FramerateCounter limit={25} />
       </Canvas>
 
       <DrawingCanvas

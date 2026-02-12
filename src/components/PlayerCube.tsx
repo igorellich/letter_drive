@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { RigidBody, RapierRigidBody } from '@react-three/rapier'
 import * as THREE from 'three'
+import { useThrottledFrame } from '../hooks/useThrottledFrame'
 
 interface Point {
   x: number
@@ -75,12 +76,12 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
     const context = canvas.getContext('2d')
     if (!context) return
 
-    // Create circular eraser
+    // Create circular eraser - using a more efficient approach
     context.clearRect(
-      screenX - eraserRadius,
-      screenY - eraserRadius,
-      eraserRadius * 2,
-      eraserRadius * 2
+      Math.floor(screenX - eraserRadius),
+      Math.floor(screenY - eraserRadius),
+      Math.ceil(eraserRadius * 2),
+      Math.ceil(eraserRadius * 2)
     )
   }
 
@@ -96,14 +97,19 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
     // Calculate distance and steps
     const distance = Math.hypot(x2 - x1, y2 - y1)
     const steps = Math.ceil(distance / 10) // Erase every 10 pixels along the line
-    
+
+    // Batch the erasing operations for better performance
+    context.save();
     for (let i = 0; i <= steps; i++) {
       const t = steps === 0 ? 0 : i / steps
       const x = x1 + (x2 - x1) * t
       const y = y1 + (y2 - y1) * t
       eraseAtPoint(x, y)
     }
+    context.restore();
   }
+
+  const { shouldUpdate } = useThrottledFrame(25); // Throttle to ~25 FPS effective rate
 
   useFrame((state) => {
     if (!rb.current) return
@@ -118,7 +124,7 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
     if (isFollowingPath && path.length > 0 && pathIndex < path.length) {
       // Following the drawn path
       const targetPoint = path[pathIndex]
-      
+
       // Convert screen coordinates to world coordinates
       const vector = new THREE.Vector3(
         (targetPoint.x / window.innerWidth) * 2 - 1,
@@ -126,18 +132,18 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
         0.5
       )
       vector.unproject(camera)
-      
+
       raycaster.ray.origin.copy(camera.position)
       raycaster.ray.direction.copy(vector.sub(camera.position).normalize())
-      
+
       const targetWorld = new THREE.Vector3()
       if (raycaster.ray.intersectPlane(plane, targetWorld)) {
         const currentPos = rb.current.translation()
         const currentVector = new THREE.Vector3(currentPos.x, 0.5, currentPos.z)
         const distance = currentVector.distanceTo(targetWorld)
-        
+
         // Move towards the waypoint
-        const lerpFactor = 0.15
+        const lerpFactor = 0.3 // Increased from 0.15 to make movement faster
         const newPos = {
           x: THREE.MathUtils.lerp(currentPos.x, targetWorld.x, lerpFactor),
           y: 0.5,
@@ -145,26 +151,39 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
         }
         rb.current.setNextKinematicTranslation(newPos)
 
-        // Erase along the actual path waypoints
-        if (pathIndex > lastErasedIndexRef.current) {
-          // Erase from the last erased waypoint to the current one
-          const startIdx = lastErasedIndexRef.current
-          const endIdx = Math.min(pathIndex, path.length - 1)
-          
-          for (let i = startIdx; i < endIdx; i++) {
-            const p1 = path[i]
-            const p2 = path[i + 1]
-            eraseAlongLine(p1.x, p1.y, p2.x, p2.y)
+        // Only perform erasing at throttled intervals to improve performance
+        if (shouldUpdate()) {
+          // Erase along the actual path waypoints - optimize by batching erasures
+          if (pathIndex > lastErasedIndexRef.current) {
+            // Erase from the last erased waypoint to the current one
+            const startIdx = lastErasedIndexRef.current
+            const endIdx = Math.min(pathIndex, path.length - 1)
+
+            // Batch the erasing operations for better performance
+            if (canvas) {
+              const context = canvas.getContext('2d');
+              if (context) {
+                context.save(); // Save context state before batch operations
+                
+                for (let i = startIdx; i < endIdx; i++) {
+                  const p1 = path[i]
+                  const p2 = path[i + 1]
+                  eraseAlongLine(p1.x, p1.y, p2.x, p2.y)
+                }
+                
+                context.restore(); // Restore context state after batch operations
+              }
+            }
+
+            lastErasedIndexRef.current = endIdx
           }
-          
-          lastErasedIndexRef.current = endIdx
         }
 
         // Pickup detection using helper
         checkPickups(rb.current.translation())
-        
+
         // If close enough, move to next waypoint
-        if (distance < 2) {
+        if (distance < 3) { // Increased from 2 to make transitions faster
           const nextIndex = pathIndex + 1
           if (nextIndex < path.length) {
             setPathIndex(nextIndex)
@@ -183,14 +202,14 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
     } else if (!isFollowingPath) {
       // Default behavior: follow mouse/pointer
       raycaster.setFromCamera(state.pointer, state.camera)
-      
+
       if (raycaster.ray.intersectPlane(plane, point)) {
         const currentPos = rb.current.translation()
-        
+
         rb.current.setNextKinematicTranslation({
-          x: THREE.MathUtils.lerp(currentPos.x, point.x, 0.15),
+          x: THREE.MathUtils.lerp(currentPos.x, point.x, 0.3), // Increased from 0.15
           y: 0.5,
-          z: THREE.MathUtils.lerp(currentPos.z, point.z, 0.15)
+          z: THREE.MathUtils.lerp(currentPos.z, point.z, 0.3)  // Increased from 0.15
         })
         // Check pickups while following pointer
         checkPickups(rb.current.translation())
