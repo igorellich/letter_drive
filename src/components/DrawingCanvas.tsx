@@ -29,11 +29,11 @@ export const DrawingCanvas = forwardRef<HTMLCanvasElement, DrawingCanvasProps>(
       const context = canvas.getContext('2d')
       if (!context) return
 
-      // Configure drawing settings
+      // Configure drawing settings - make it transparent since we're using 3D dots
       context.lineCap = 'round'
       context.lineJoin = 'round'
       context.lineWidth = 6
-      context.strokeStyle = '#3a3a3a'
+      context.strokeStyle = 'transparent' // Make the drawn path invisible
 
       contextRef.current = context
 
@@ -55,39 +55,8 @@ export const DrawingCanvas = forwardRef<HTMLCanvasElement, DrawingCanvasProps>(
     }, [])
 
     const drawLineWithGlow = (x1: number, y1: number, x2: number, y2: number) => {
-      if (!contextRef.current) return
-      const context = contextRef.current
-
-      const dotRadius = 8
-      const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-      const dotSpacing = 12
-      const dotCount = Math.ceil(distance / dotSpacing)
-
-      for (let i = 0; i <= dotCount; i++) {
-        const t = dotCount === 0 ? 0 : i / dotCount
-        const x = x1 + (x2 - x1) * t
-        const y = y1 + (y2 - y1) * t
-
-        // Draw subtle shadow effect around track
-        for (let g = 6; g > 0; g--) {
-          context.fillStyle = `rgba(58, 58, 58, ${0.04 * (1 - g / 6)})`
-          context.beginPath()
-          context.arc(x, y, dotRadius + g * 1.5, 0, Math.PI * 2)
-          context.fill()
-        }
-
-        // Draw main tire track (dark gray/brown)
-        context.fillStyle = '#3a3a3a'
-        context.beginPath()
-        context.arc(x, y, dotRadius, 0, Math.PI * 2)
-        context.fill()
-
-        // Draw inner track detail (slightly lighter)
-        context.fillStyle = '#555555'
-        context.beginPath()
-        context.arc(x, y, dotRadius * 0.6, 0, Math.PI * 2)
-        context.fill()
-      }
+      // This function is now a no-op since we're using 3D dots instead of canvas drawing
+      // The path points are still captured by the touch handlers for the 3D representation
     }
 
     const startDrawing = (e: React.TouchEvent<HTMLCanvasElement>) => {

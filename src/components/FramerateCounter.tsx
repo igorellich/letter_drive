@@ -15,16 +15,16 @@ export const FramerateCounter = ({ limit = 25 }) => {
     const delta = now - stats.current.lastFrameTime
     const interval = 1000 / limit
 
-    // Ограничение частоты кадров
-    if (delta < interval) return 
-    
+    // Limit frame rate updates
+    if (delta < interval) return
+
     stats.current.lastFrameTime = now - (delta % interval)
     stats.current.frameCount++
 
-    // Обновление счетчика раз в секунду
+    // Update counter once per second
     if (now - stats.current.lastTime >= 1000) {
       if (fpsTextRef.current) {
-        fpsTextRef.current.innerText = `FPS: ${stats.current.frameCount}`
+        fpsTextRef.current.textContent = `FPS: ${stats.current.frameCount}`
       }
       stats.current.frameCount = 0
       stats.current.lastTime = now

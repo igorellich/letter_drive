@@ -21,6 +21,7 @@ interface PlayerCubeProps {
   canvas?: HTMLCanvasElement | null
   items?: Item[]
   onPickup?: (id: number) => void
+  onPathProgress?: (index: number) => void // Callback to notify path progress
 }
 
 /**
@@ -30,7 +31,7 @@ interface PlayerCubeProps {
  * erases the drawn line as it travels, and detects collisions with items.
  * When no path is active, it follows the user's pointer position.
  */
-export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPickup }: PlayerCubeProps) => {
+export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPickup, onPathProgress }: PlayerCubeProps) => {
   const rb = useRef<RapierRigidBody>(null)
   const { camera } = useThree()
   const [pathIndex, setPathIndex] = useState(0)
@@ -94,22 +95,20 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
     const context = canvas.getContext('2d')
     if (!context) return
 
-    // Calculate distance and steps
-    const distance = Math.hypot(x2 - x1, y2 - y1)
-    const steps = Math.ceil(distance / 10) // Erase every 10 pixels along the line
-
-    // Batch the erasing operations for better performance
+    // Use a single path operation instead of multiple clearRect calls for better performance
     context.save();
-    for (let i = 0; i <= steps; i++) {
-      const t = steps === 0 ? 0 : i / steps
-      const x = x1 + (x2 - x1) * t
-      const y = y1 + (y2 - y1) * t
-      eraseAtPoint(x, y)
-    }
+    context.beginPath();
+    context.moveTo(x1, y1);
+    context.lineTo(x2, y2);
+    context.lineWidth = eraserRadius * 2;
+    context.lineCap = 'round';
+    context.strokeStyle = 'rgba(0,0,0,0)';
+    context.globalCompositeOperation = 'destination-out';
+    context.stroke();
     context.restore();
   }
 
-  const { shouldUpdate } = useThrottledFrame(25); // Throttle to ~25 FPS effective rate
+  const { shouldUpdate } = useThrottledFrame(60); // Throttle to ~60 FPS effective rate for smoother movement
 
   useFrame((state) => {
     if (!rb.current) return
@@ -143,7 +142,7 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
         const distance = currentVector.distanceTo(targetWorld)
 
         // Move towards the waypoint
-        const lerpFactor = 0.3 // Increased from 0.15 to make movement faster
+        const lerpFactor = 0.15 // Adjusted for smoother movement
         const newPos = {
           x: THREE.MathUtils.lerp(currentPos.x, targetWorld.x, lerpFactor),
           y: 0.5,
@@ -164,27 +163,97 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
               const context = canvas.getContext('2d');
               if (context) {
                 context.save(); // Save context state before batch operations
-                
+
                 for (let i = startIdx; i < endIdx; i++) {
                   const p1 = path[i]
                   const p2 = path[i + 1]
                   eraseAlongLine(p1.x, p1.y, p2.x, p2.y)
                 }
-                
+
                 context.restore(); // Restore context state after batch operations
               }
             }
 
             lastErasedIndexRef.current = endIdx
           }
+          
+          // Perform pickup detection only at throttled intervals
+          checkPickups(rb.current.translation());
         }
 
-        // Pickup detection using helper
-        checkPickups(rb.current.translation())
+        // Calculate progress based on actual position between waypoints for smoother dot disappearance
+        if (onPathProgress && path.length > 0) {
+          let progressPercent = 0;
+          
+          if (pathIndex === 0) {
+            // At the first point
+            progressPercent = 0;
+          } else if (pathIndex >= path.length) {
+            // At or past the last point
+            progressPercent = 100;
+          } else {
+            // Calculate progress considering the current position between waypoints
+            const currentPos = rb.current.translation();
+            const currentVector = new THREE.Vector3(currentPos.x, 0.5, currentPos.z);
+            
+            // Calculate distance to the current target
+            const targetWorld = new THREE.Vector3()
+            const targetPoint = path[pathIndex]
+            const vector = new THREE.Vector3(
+              (targetPoint.x / window.innerWidth) * 2 - 1,
+              -((targetPoint.y / window.innerHeight) * 2 - 1),
+              0.5
+            );
+            vector.unproject(camera);
+            raycaster.ray.origin.copy(camera.position);
+            raycaster.ray.direction.copy(vector.sub(camera.position).normalize());
+            
+            if (raycaster.ray.intersectPlane(plane, targetWorld)) {
+              // Calculate how far we are between the previous point and current target
+              const prevPoint = path[pathIndex - 1];
+              
+              // Convert previous point to world coordinates
+              const prevVector = new THREE.Vector3(
+                (prevPoint.x / window.innerWidth) * 2 - 1,
+                -((prevPoint.y / window.innerHeight) * 2 - 1),
+                0.5
+              );
+              prevVector.unproject(camera);
+              raycaster.ray.origin.copy(camera.position);
+              raycaster.ray.direction.copy(prevVector.sub(camera.position).normalize());
+              
+              const prevWorld = new THREE.Vector3();
+              if (raycaster.ray.intersectPlane(plane, prevWorld)) {
+                // Calculate progress between previous and current points
+                const totalSegLength = prevWorld.distanceTo(targetWorld);
+                const currentSegLength = currentVector.distanceTo(targetWorld);
+                
+                // Calculate the fractional progress within the current segment
+                let segmentProgress = 0;
+                if (totalSegLength > 0) {
+                  segmentProgress = 1 - (currentSegLength / totalSegLength);
+                }
+                
+                // Calculate overall progress
+                const overallProgress = ((pathIndex - 1) + segmentProgress) / path.length;
+                progressPercent = Math.floor(Math.min(100, Math.max(0, overallProgress * 100)));
+              } else {
+                // Fallback to simple index-based progress
+                progressPercent = Math.floor(((pathIndex - 1) / path.length) * 100);
+              }
+            } else {
+              // Fallback to simple index-based progress
+              progressPercent = Math.floor(((pathIndex - 1) / path.length) * 100);
+            }
+          }
+          
+          onPathProgress(progressPercent); // Pass the progress percentage
+        }
 
         // If close enough, move to next waypoint
-        if (distance < 3) { // Increased from 2 to make transitions faster
+        if (distance < 2) { // Standard distance threshold
           const nextIndex = pathIndex + 1
+
           if (nextIndex < path.length) {
             setPathIndex(nextIndex)
           } else {
@@ -201,18 +270,21 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
       }
     } else if (!isFollowingPath) {
       // Default behavior: follow mouse/pointer
-      raycaster.setFromCamera(state.pointer, state.camera)
+      // Only perform raycasting at throttled intervals to improve performance
+      if (shouldUpdate()) {
+        raycaster.setFromCamera(state.pointer, state.camera)
 
-      if (raycaster.ray.intersectPlane(plane, point)) {
-        const currentPos = rb.current.translation()
+        if (raycaster.ray.intersectPlane(plane, point)) {
+          const currentPos = rb.current.translation()
 
-        rb.current.setNextKinematicTranslation({
-          x: THREE.MathUtils.lerp(currentPos.x, point.x, 0.3), // Increased from 0.15
-          y: 0.5,
-          z: THREE.MathUtils.lerp(currentPos.z, point.z, 0.3)  // Increased from 0.15
-        })
-        // Check pickups while following pointer
-        checkPickups(rb.current.translation())
+          rb.current.setNextKinematicTranslation({
+            x: THREE.MathUtils.lerp(currentPos.x, point.x, 0.15),
+            y: 0.5,
+            z: THREE.MathUtils.lerp(currentPos.z, point.z, 0.15)
+          })
+          // Check pickups while following pointer
+          checkPickups(rb.current.translation())
+        }
       }
     }
   })
@@ -220,45 +292,15 @@ export const PlayerCube = ({ path = [], onPathComplete, canvas, items = [], onPi
   return (
     <RigidBody ref={rb} type="kinematicPosition" colliders="cuboid">
       <group scale={[4, 4, 4]}>
-        {/* Car body */}
+        {/* Simplified car body - single box */}
         <mesh castShadow position={[0, 0.3, 0]}>
           <boxGeometry args={[0.8, 0.5, 1.2]} />
           <meshStandardMaterial color="#c41e3a" roughness={0.6} metalness={0.3} />
         </mesh>
-        
-        {/* Car roof/cabin */}
-        <mesh castShadow position={[0, 0.65, -0.1]}>
-          <boxGeometry args={[0.6, 0.35, 0.6]} />
-          <meshStandardMaterial color="#b01830" roughness={0.6} metalness={0.3} />
-        </mesh>
-        
-        {/* Front windshield */}
-        <mesh castShadow position={[0, 0.6, -0.5]}>
-          <planeGeometry args={[0.6, 0.3]} />
-          <meshStandardMaterial color="#87ceeb" roughness={0.2} metalness={0.8} />
-        </mesh>
-        
-        {/* Left wheel */}
-        <mesh castShadow position={[-0.5, 0.15, 0.35]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.2, 0.2, 0.15, 16]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.1} />
-        </mesh>
-        
-        {/* Right wheel */}
-        <mesh castShadow position={[0.5, 0.15, 0.35]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.2, 0.2, 0.15, 16]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.1} />
-        </mesh>
-        
-        {/* Back left wheel */}
-        <mesh castShadow position={[-0.5, 0.15, -0.35]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.2, 0.2, 0.15, 16]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.1} />
-        </mesh>
-        
-        {/* Back right wheel */}
-        <mesh castShadow position={[0.5, 0.15, -0.35]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.2, 0.2, 0.15, 16]} />
+
+        {/* Single simplified wheel at front (reduces poly count) */}
+        <mesh castShadow position={[0, 0.15, 0.35]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.2, 0.2, 0.15, 8]} /> {/* Reduced segments */}
           <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0.1} />
         </mesh>
       </group>
