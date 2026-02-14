@@ -7,6 +7,7 @@ import { useCallback, useRef, useState } from "react"
 import * as THREE from 'three'
 import { Shark } from "./Shark"
 import { FoodManager, type FoodItem } from "./food/FoodManager"
+import { Steak } from "./food/Steak"
 // Создаем внешний объект для хранения данных джойстика
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
 export const Scene = () => {
@@ -45,6 +46,7 @@ export const Scene = () => {
                     maxItems={15}
                     sharkRef={sharkRef}
                     handleEat={handleEat}
+                    FoodComponent={Steak}
                 />
                 <WaterPlane />
             </Canvas>

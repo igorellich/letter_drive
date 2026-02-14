@@ -1,25 +1,26 @@
-import { useFrame } from '@react-three/fiber'
+import { useFrame } from "@react-three/fiber"
+import type { FoodItem } from "./FoodManager"
 import * as THREE from 'three'
-import type { FoodItem } from './FoodManager'
-
 export const useCollision = (
-  meshRef: React.RefObject<THREE.Mesh>,
-  foodItems: FoodItem[],
+  playerRef: React.RefObject<THREE.Mesh>, 
+  items: FoodItem[], 
   onEat: (id: number) => void,
-  radius: number = 0.7
+  distance: number
 ) => {
+  const worldPos = new THREE.Vector3()
+
   useFrame(() => {
-    if (!meshRef.current || foodItems.length === 0) return
+    if (!playerRef.current) return
 
-    const playerPos = meshRef.current.position
-
-    for (const food of foodItems) {
-      // Используем квадрат расстояния для оптимизации (быстрее чем distanceTo)
-      const distanceSq = playerPos.distanceToSquared(food.pos)
-      
-      if (distanceSq < radius * radius) {
-        onEat(food.id)
+    items.forEach(item => {
+      if (item.ref && item.ref.current) {
+        // Получаем реальную позицию объекта в пространстве (с учетом анимации)
+        item.ref.current.getWorldPosition(worldPos)
+        
+        if (playerRef.current!.position.distanceTo(worldPos) < distance) {
+          onEat(item.id)
+        }
       }
-    }
+    })
   })
 }

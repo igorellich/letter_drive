@@ -1,11 +1,24 @@
-import { useEffect, type RefObject } from 'react'
+import React, { useEffect} from 'react'
 import * as THREE from 'three'
 import { useThree } from '@react-three/fiber'
 import { useCollision } from './useCollision'
 
+
 export interface FoodItem {
   id: number
-  pos: THREE.Vector3
+  position: THREE.Vector3
+  // Добавляем ref, чтобы коллизии видели реальное положение меша, а не стейт
+  ref?: React.RefObject<THREE.Group> 
+}
+
+interface FoodManagerProps {
+  foodItems: FoodItem[]
+  setFoodItems: React.Dispatch<React.SetStateAction<FoodItem[]>>
+  maxItems?: number
+  sharkRef: React.RefObject<THREE.Mesh>
+  handleEat: (id: number) => void
+  // Компонент, который будет отрисован для каждой еды
+  FoodComponent: React.ComponentType<{ item: FoodItem }>
 }
 
 export const FoodManager = ({ 
@@ -13,40 +26,42 @@ export const FoodManager = ({
   setFoodItems, 
   maxItems = 15,
   sharkRef,
-  handleEat
-}: { 
-  foodItems: FoodItem[], 
-  setFoodItems: React.Dispatch<React.SetStateAction<FoodItem[]>>,
-  maxItems?: number ,
-  sharkRef:RefObject<THREE.Mesh>,
-  handleEat: (id: number) => void
-}) => {
+  handleEat,
+  FoodComponent
+}: FoodManagerProps) => {
   const { viewport } = useThree()
-    // Логика коллизий теперь живет здесь и работает каждый кадр
-    useCollision(sharkRef, foodItems, handleEat, 0.6)
+
+  // Логика коллизий (использует ref-ы объектов для точности)
+  useCollision(sharkRef, foodItems, handleEat, 0.7)
+
+  // Интервал спавна
   useEffect(() => {
     const interval = setInterval(() => {
       setFoodItems(prev => {
         if (prev.length >= maxItems) return prev
 
-        // Генерируем позицию в пределах вьюпорта (с небольшим отступом 0.5)
-        const margin = 0.5
+        const margin = 1
         const x = (Math.random() - 0.5) * (viewport.width - margin)
         const y = (Math.random() - 0.5) * (viewport.height - margin)
-
-        return [...prev, { id: Date.now(), pos: new THREE.Vector3(x, y, 0) }]
+        
+        const newItem: FoodItem = {
+          id: Date.now(),
+          position: new THREE.Vector3(x, y, 0),
+          ref: React.createRef() as React.RefObject<THREE.Group<THREE.Object3DEventMap>>  // Создаем ref для связи с мешем
+        }
+        return [...prev, newItem]
       })
-    }, 1000)
+    }, 1500)
+
     return () => clearInterval(interval)
   }, [viewport, maxItems, setFoodItems])
 
   return (
     <>
       {foodItems.map(item => (
-        <mesh key={item.id} position={item.pos}>
-          <sphereGeometry args={[0.2]} />
-          <meshStandardMaterial color="#ffdd00" emissive="#ffaa00" />
-        </mesh>
+        <group key={item.id} ref={item.ref} position={item.position}>
+          <FoodComponent item={item} />
+        </group>
       ))}
     </>
   )
