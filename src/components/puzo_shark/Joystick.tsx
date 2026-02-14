@@ -1,10 +1,14 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import nipplejs from 'nipplejs'
 
-// Создаем внешний объект для хранения данных джойстика
-export const joystickData = { x: 0, y: 0, active: false }
+export type JoystickData = {
+  x:number,
+  y: number,
+  active: boolean
+}
 
-export const Joystick = () => {
+export const Joystick = (props: {joystickData:JoystickData}) => {
+  const {joystickData} = props;
   const containerRef = useRef<HTMLDivElement>(null!)
 
   useEffect(() => {
@@ -16,7 +20,7 @@ export const Joystick = () => {
       size: 120
     })
 
-    manager.on('move', (evt, data) => {
+    manager.on('move', (_, data) => {
       // data.vector содержит x и y от -1 до 1
       joystickData.x = data.vector.x
       joystickData.y = data.vector.y
@@ -32,5 +36,5 @@ export const Joystick = () => {
     return () => manager.destroy()
   }, [])
 
-  return <div ref={containerRef} style={{ position: 'absolute', bottom: 0, left: 0, width: '200px', height: '200px', zIndex: 1000 }} />
+  return <div ref={containerRef} style={{ overflow:'hidden', position: 'absolute', bottom: 0, left: 0, width: '200px', height: '200px', zIndex: 1000 }} />
 }

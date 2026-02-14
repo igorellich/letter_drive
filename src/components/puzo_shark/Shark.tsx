@@ -1,18 +1,18 @@
 import { useGLTF, useAnimations, Center } from '@react-three/drei'
-import React, { useEffect, useRef, useMemo } from 'react'
+import { useEffect, useMemo, type RefObject } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import { joystickData } from './joystick' // Твои данные джойстика
+import type { JoystickData } from './Joystick'
 
-export const Shark = (props:{meshRef: any}) => {
 
+export const Shark = (props:{meshRef: RefObject<THREE.Mesh>, joystickData: JoystickData}) => {
+  const {joystickData} = props;
   const { scene, animations } = useGLTF('/models/shark.glb')
   const { actions, names } = useAnimations(animations, scene)
   const { viewport } = useThree()
 
   // Вспомогательные переменные для расчетов (чтобы не создавать новые каждый кадр)
   const targetPos = useMemo(() => new THREE.Vector3(0, 0, -0.5), [])
-  const currentDir = useMemo(() => new THREE.Vector3(), [])
   const targetQuaternion = useMemo(() => new THREE.Quaternion(), [])
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export const Shark = (props:{meshRef: any}) => {
     })
   }, [actions, names, scene])
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (!props.meshRef.current) return
 
     // 1. Ускорение анимации
