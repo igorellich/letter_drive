@@ -16,8 +16,10 @@ export const useCollision = (
       if (item.ref && item.ref.current) {
         // Получаем реальную позицию объекта в пространстве (с учетом анимации)
         item.ref.current.getWorldPosition(worldPos)
-        
-        if (playerRef.current!.position.distanceTo(worldPos) < distance) {
+        const playerworldPos= new THREE.Vector3();
+        playerRef.current!.getWorldPosition(playerworldPos);
+        console.log(playerworldPos, worldPos)
+        if (playerworldPos.distanceTo(worldPos) < distance) {
           onEat(item.id)
         }
       }

@@ -9,8 +9,8 @@ export const Steak = (props:{item:FoodItem}) => {
   
   useFrame((state) => {
     // Своя логика: плавно плаваем вверх-вниз
-    const time = state.clock.getElapsedTime()
-    meshRef.current.position.y = item.position.y + Math.sin(time + item.position.x) * 0.01
+    // const time = state.clock.getElapsedTime()
+    // meshRef.current.position.y = item.position.y + Math.sin(time + item.position.x) * 0.01
     // И вращаемся
     meshRef.current.rotation.z += 0.01
   })

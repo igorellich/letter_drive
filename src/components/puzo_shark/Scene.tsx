@@ -3,7 +3,7 @@ import { Canvas } from "@react-three/fiber"
 import { ControlledMesh } from "./ControlledMesh"
 import { Joystick, type JoystickData } from "./Joystick"
 import { WaterPlane } from "./waterPlane/WaterPlane"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState, type RefObject } from "react"
 import * as THREE from 'three'
 import { Shark } from "./Shark"
 import { FoodManager, type FoodItem } from "./food/FoodManager"
@@ -19,10 +19,10 @@ export const Scene = () => {
     const handleEat = useCallback((id: number) => {
         setFoodItems(prev => prev.filter(item => item.id !== id))
 
-        // Эффект роста (опционально)
-        if (sharkRef.current) {
-            sharkRef.current.scale.addScalar(0.02)
-        }
+        // // Эффект роста (опционально)
+        // if (sharkRef.current) {
+        //     sharkRef.current.scale.addScalar(0.02)
+        // }
     }, [])
 
 
@@ -37,7 +37,7 @@ export const Scene = () => {
                 <ambientLight intensity={2} />
                 {/* <pointLight position={[10, 10, 10]} intensity={1.5} /> */}
                 <ControlledMesh baseSpeed={3} meshRef={sharkRef} joystickData={joystickData}>
-                    <Shark meshRef={sharkRef} joystickData={joystickData} />
+                    {(actionRef:RefObject<THREE.AnimationAction>)=> <Shark actionRef={actionRef} />}
                 </ControlledMesh>
                 {/* Менеджер только спавнит и рисует */}
                 <FoodManager

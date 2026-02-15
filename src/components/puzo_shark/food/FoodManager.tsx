@@ -46,12 +46,12 @@ export const FoodManager = ({
         
         const newItem: FoodItem = {
           id: Date.now(),
-          position: new THREE.Vector3(x, y, 0),
+          position: new THREE.Vector3(x, y, -0.45),
           ref: React.createRef() as React.RefObject<THREE.Group<THREE.Object3DEventMap>>  // Создаем ref для связи с мешем
         }
         return [...prev, newItem]
       })
-    }, 1500)
+    }, 5000)
 
     return () => clearInterval(interval)
   }, [viewport, maxItems, setFoodItems])
