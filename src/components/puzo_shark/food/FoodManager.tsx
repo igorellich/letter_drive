@@ -32,7 +32,7 @@ export const FoodManager = ({
   const { viewport } = useThree()
 
   // Логика коллизий (использует ref-ы объектов для точности)
-  useCollision(sharkRef, foodItems, handleEat, 0.7)
+  useCollision(sharkRef, foodItems, handleEat, 0.6)
 
   // Интервал спавна
   useEffect(() => {
@@ -46,12 +46,12 @@ export const FoodManager = ({
         
         const newItem: FoodItem = {
           id: Date.now(),
-          position: new THREE.Vector3(x, y, -0.45),
+          position: new THREE.Vector3(x, y, -0.01),
           ref: React.createRef() as React.RefObject<THREE.Group<THREE.Object3DEventMap>>  // Создаем ref для связи с мешем
         }
         return [...prev, newItem]
       })
-    }, 5000)
+    }, 500)
 
     return () => clearInterval(interval)
   }, [viewport, maxItems, setFoodItems])
@@ -59,9 +59,7 @@ export const FoodManager = ({
   return (
     <>
       {foodItems.map(item => (
-        <group key={item.id} ref={item.ref} position={item.position}>
-          <FoodComponent item={item} />
-        </group>
+        <FoodComponent key={item.id} item={item} />
       ))}
     </>
   )

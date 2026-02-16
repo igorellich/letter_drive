@@ -43,7 +43,7 @@ export const Scene = () => {
                 <FoodManager
                     foodItems={foodItems}
                     setFoodItems={setFoodItems}
-                    maxItems={15}
+                    maxItems={1}
                     sharkRef={sharkRef}
                     handleEat={handleEat}
                     FoodComponent={Steak}
