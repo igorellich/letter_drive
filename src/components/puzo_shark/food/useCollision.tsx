@@ -18,7 +18,7 @@ export const useCollision = (
         item.ref.current.getWorldPosition(worldPos)
         const playerworldPos= new THREE.Vector3();
         playerRef.current!.getWorldPosition(playerworldPos);
-        console.log(playerworldPos.distanceTo(worldPos))
+        // console.log(playerworldPos.distanceTo(worldPos))
         if (playerworldPos.distanceTo(worldPos) < distance) {
           onEat(item.id)
         }
