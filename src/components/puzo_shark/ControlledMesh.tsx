@@ -1,10 +1,10 @@
 import { useMemo, useRef, type ReactElement, type RefObject } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
-import type { JoystickData } from './Joystick';
-import { TopDownBubbleTrail } from './BubbleTrail';
+import type { JoystickData } from './Joystick'
+import { TopDownBubbleTrail } from './BubbleTrail'
 
-
+const MAX_POINTS = 64; 
 
 export const ControlledMesh = (props: {
   baseSpeed: number,
@@ -12,71 +12,153 @@ export const ControlledMesh = (props: {
   meshRef: RefObject<THREE.Mesh>,
   joystickData: JoystickData
 }) => {
-  const { joystickData } = props;
-
-  const { viewport } = useThree() // Получаем размеры экрана в 3D единицах
+  const { joystickData, meshRef } = props;
+  const { viewport } = useThree()
+  
+  const pathRef = useRef<THREE.Vector3[]>([]);
+  const isDrawing = useRef(false);
   const isMovingRef = useRef<boolean>(false);
-
-  // Вспомогательные переменные для расчетов (чтобы не создавать новые каждый кадр)
+  
   const targetPos = useMemo(() => new THREE.Vector3(0, 0, -0.5), [])
   const targetQuaternion = useMemo(() => new THREE.Quaternion(), [])
+  const currentDir = useMemo(() => new THREE.Vector3(0, 1, 0), [])
+  const moveDir = useMemo(() => new THREE.Vector3(), [])
   const actionRef = useRef<THREE.AnimationAction>(null!);
 
-  useFrame((_, delta) => {
+  const lineGeomRef = useRef<THREE.BufferGeometry>(null!);
+  const linePoints = useMemo(() => new Float32Array(MAX_POINTS * 3), []);
 
-    // 1. Ускорение анимации
+  const updateLineVisual = () => {
+    if (!lineGeomRef.current) return;
+    const path = pathRef.current;
+    const posAttr = lineGeomRef.current.attributes.position;
+    for (let i = 0; i < MAX_POINTS; i++) {
+      const p = path[i] || (path.length > 0 ? path[path.length - 1] : targetPos);
+      linePoints[i * 3] = p.x;
+      linePoints[i * 3 + 1] = p.y;
+      linePoints[i * 3 + 2] = p.z;
+    }
+    posAttr.needsUpdate = true;
+  };
+
+  const handlePointer = (e: any) => {
+    if (!isDrawing.current) return;
+    const path = pathRef.current;
+    const lastPoint = path[path.length - 1];
+    // Увеличили порог записи, чтобы линия была чище
+    if (path.length < MAX_POINTS && (!lastPoint || lastPoint.distanceTo(e.point) > 0.5)) {
+      const p = e.point.clone();
+      p.z = -0.5;
+      path.push(p);
+      updateLineVisual();
+    }
+  };
+
+  useFrame((_, delta) => {
+    const mesh = meshRef.current;
+    const path = pathRef.current;
+    if (!mesh) return;
+
+    let moving = joystickData.active;
+
+    if (path.length > 0 && !joystickData.active) {
+      moving = true;
+      const nextPoint = path[0];
+      const distToNext = targetPos.distanceTo(nextPoint);
+
+      // 1. РАСЧЕТ НАПРАВЛЕНИЯ
+      moveDir.subVectors(nextPoint, targetPos);
+      
+      // КЛЮЧЕВОЙ ФИКС: Поворачиваем только если цель не слишком близко (> 0.2)
+      // Это убирает дерганье в финальной точке пути
+      if (moveDir.length() > 0.2) {
+        moveDir.normalize();
+        currentDir.lerp(moveDir, 0.35); 
+        const angle = Math.atan2(currentDir.x, currentDir.y);
+        const targetQ = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -angle);
+        targetQuaternion.slerp(targetQ, 0.4);
+      }
+
+      // 2. ДВИЖЕНИЕ
+      targetPos.addScaledVector(currentDir, 11.0 * delta);
+
+      // 3. ПОГЛОЩЕНИЕ ТОЧКИ
+      // Увеличили радиус до 0.8, чтобы меш "пролетал" через точки плавнее
+      if (distToNext < 0.8) {
+        path.shift();
+        updateLineVisual();
+      }
+    } 
+    else if (joystickData.active) {
+      if (path.length > 0) {
+        pathRef.current = [];
+        updateLineVisual();
+      }
+      const joySpeed = 6 * delta;
+      targetPos.x += joystickData.x * joySpeed;
+      targetPos.y += joystickData.y * joySpeed;
+      
+      const angle = Math.atan2(joystickData.x, joystickData.y);
+      targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -angle);
+    }
+
+    isMovingRef.current = moving;
+
+    // ПРИМЕНЕНИЕ ТРАНСФОРМАЦИЙ
+    mesh.position.lerp(targetPos, 0.3);
+    mesh.quaternion.slerp(targetQuaternion, 0.4);
+
+    const margin = 0.5;
+    mesh.position.x = THREE.MathUtils.clamp(mesh.position.x, -viewport.width / 2 + margin, viewport.width / 2 - margin);
+    mesh.position.y = THREE.MathUtils.clamp(mesh.position.y, -viewport.height / 2 + margin, viewport.height / 2 - margin);
+    
+    if (joystickData.active || path.length === 0) {
+       targetPos.copy(mesh.position);
+    }
 
     if (actionRef.current) {
-      const inputIntensity = Math.sqrt(joystickData.x ** 2 + joystickData.y ** 2)
-      // Базовая скорость 0.6 + бонус от джойстика. Lerp делает ускорение мягким.
-      const targetSpeed = 0.6 + inputIntensity * 30.0
-      actionRef.current.timeScale = THREE.MathUtils.lerp(actionRef.current.timeScale, targetSpeed, 0.1)
+      const ts = moving ? (path.length > 0 ? 6.0 : 3.5) : 0.6;
+      actionRef.current.timeScale = THREE.MathUtils.lerp(actionRef.current.timeScale, ts, 0.2);
     }
-    isMovingRef.current = joystickData.active;
-    // 2. Плавное движение (Lerp)
-    if (joystickData.active) {
-      
-      const moveSpeed = 3 * delta
-      // Вычисляем смещение
-      targetPos.x += joystickData.x * moveSpeed
-      targetPos.y += joystickData.y * moveSpeed
-
-      // Ограничение границами экрана
-      const margin = 0.5
-      targetPos.x = THREE.MathUtils.clamp(targetPos.x, -viewport.width / 2 + margin, viewport.width / 2 - margin)
-      targetPos.y = THREE.MathUtils.clamp(targetPos.y, -viewport.height / 2 + margin, viewport.height / 2 - margin)
-
-      // Поворот "лицом" к направлению
-      const angle = Math.atan2(joystickData.x, joystickData.y)
-      targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -angle)
-    }
-
-    // Применяем позицию и поворот плавно
-    props.meshRef.current.position.lerp(targetPos, 0.2) // 0.1 - коэффициент мягкости хода
-    props.meshRef.current.quaternion.slerp(targetQuaternion, 0.25) // 0.1 - мягкость поворота
-
-  })
+  });
 
   return (
     <group>
-      <group ref={props.meshRef}>
+      <mesh 
+        visible={false} 
+        onPointerDown={(e) => { 
+          isDrawing.current = true; 
+          pathRef.current = [meshRef.current?.position.clone() || e.point.clone()];
+          updateLineVisual();
+        }}
+        onPointerMove={handlePointer}
+        onPointerUp={() => isDrawing.current = false}
+      >
+        <planeGeometry args={[viewport.width * 2, viewport.height * 2]} />
+      </mesh>
+
+      <line>
+        <bufferGeometry ref={lineGeomRef}>
+          <bufferAttribute 
+            attach="attributes-position" 
+            args={[linePoints, 3]} 
+            count={MAX_POINTS} 
+            itemSize={3} 
+          />
+        </bufferGeometry>
+        <lineBasicMaterial color="#00f2ff" transparent opacity={0.4} />
+      </line>
+
+      <group ref={meshRef}>
         {props.children(actionRef)}
       </group>
       
-        {/* ПУЗЫРЬКИ! 🫧 */}
-        <TopDownBubbleTrail
-          isMovingRef={isMovingRef}
-          sharkRef={props.meshRef}
-          count={1000}                 // много пузырьков
-          bubbleColor="#aaddff"        // нежно-голубые
-          bubbleSize={0.03}             // крупные, чтобы было видно сверху
-          riseSpeed={0.04}              // медленно поднимаются
-          trailWidth={0.05}             // широкий след
-          trailDensity={0.3}           // очень плотный
-          maxHeight={0.1}              // высоко поднимаются
-        />
-      
+      <TopDownBubbleTrail 
+        isMovingRef={isMovingRef} 
+        sharkRef={meshRef} 
+        count={400} 
+        bubbleSize={0.02} 
+      />
     </group>
-
   )
 }
