@@ -1,10 +1,10 @@
-import { useRef, useEffect, useMemo, useState } from 'react'
+import { useRef, useEffect, useMemo, useState, type RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 interface Bubble {
   position: THREE.Vector3
-  baseY: number
+  baseZ: number
   size: number
   life: number
   maxLife: number
@@ -16,6 +16,7 @@ interface Bubble {
 interface TopDownBubbleTrailProps {
   sharkRef: React.RefObject<THREE.Object3D | null>
   count?: number
+  isMovingRef:RefObject<boolean>
   bubbleColor?: string
   bubbleSize?: number
   riseSpeed?: number
@@ -25,6 +26,7 @@ interface TopDownBubbleTrailProps {
 }
 
 export function TopDownBubbleTrail({ 
+  isMovingRef,
   sharkRef,
   count = 300,
   bubbleColor = '#ffffff',
@@ -93,7 +95,7 @@ export function TopDownBubbleTrail({
     for (let i = 0; i < count; i++) {
       newBubbles.push({
         position: new THREE.Vector3(0, -1000, 0),
-        baseY: -1000,
+        baseZ: -1000,
         size: bubbleSize * (0.5 + Math.random()),
         life: 2.0, // сразу "мертвые" для ресайкла
         maxLife: 0.5 + Math.random(),
@@ -115,7 +117,7 @@ export function TopDownBubbleTrail({
   // Обновление позиций пузырьков
   useFrame((_, delta) => {
     // Проверяем, что все необходимые ссылки существуют
-    if (!isReady || !pointsRef.current || !geometryRef.current || !sharkRef.current) {
+    if ( !isReady || !pointsRef.current || !geometryRef.current || !sharkRef.current) {
       return
     }
     
@@ -137,7 +139,8 @@ export function TopDownBubbleTrail({
       // Если пузырек "умер" или поднялся слишком высоко
       if (bubble.life > bubble.maxLife || bubble.position.y > sharkPos.y + maxHeight) {
         // С вероятностью trailDensity создаем новый пузырек
-        if (Math.random() < trailDensity * delta * 5) {
+        if ( Math.random() < trailDensity * delta * 5) {
+         
           // Направление акулы
           const dir = new THREE.Vector3(0, 0, -1)
           if (sharkRef.current.rotation) {
@@ -146,14 +149,19 @@ export function TopDownBubbleTrail({
           
           // Позиция позади акулы
           const trailOffset = -2.0
-          
+           if(!isMovingRef.current){
+            bubble.position.set(
+            sharkPos.x + dir.x * trailOffset + (Math.random() - 0.05) * trailWidth,
+            sharkPos.y + dir.y * trailOffset + (Math.random() - 0.05) * trailWidth,
+            -100)
+          }else{
           bubble.position.set(
             sharkPos.x + dir.x * trailOffset + (Math.random() - 0.05) * trailWidth,
             sharkPos.y + dir.y * trailOffset + (Math.random() - 0.05) * trailWidth,
             sharkPos.z 
-          )
+          )}
           
-          bubble.baseY = bubble.position.y
+          bubble.baseZ = bubble.position.z
           bubble.life = 0
           bubble.maxLife = 2 + Math.random() * 2
           bubble.speed = riseSpeed * (0.7 + Math.random() * 0.6)
@@ -162,16 +170,16 @@ export function TopDownBubbleTrail({
         }
       } 
       // Проверяем, что пузырек не в "спящем" режиме (не глубоко внизу)
-      else if (bubble.position.y > -100) {
+      else if (bubble.position.z > -50) {
         // Живой пузырек - поднимаем и добавляем покачивание
-        bubble.position.y += bubble.speed * delta * 3
+        bubble.position.z += bubble.speed * delta * 3
         
         // Покачивание
         const wobbleX = Math.sin(bubble.life * 3 + bubble.wobblePhase) * 0.1
-        const wobbleZ = Math.cos(bubble.life * 2.5 + bubble.wobblePhase) * 0.1
+        const wobbleY = Math.cos(bubble.life * 2.5 + bubble.wobblePhase) * 0.1
         
         bubble.position.x += wobbleX * delta * 2
-        bubble.position.z += wobbleZ * delta * 2
+        bubble.position.y += wobbleY * delta * 2
       }
       
       // Записываем позицию в геометрию

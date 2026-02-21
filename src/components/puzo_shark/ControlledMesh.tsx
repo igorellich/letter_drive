@@ -15,7 +15,7 @@ export const ControlledMesh = (props: {
   const { joystickData } = props;
 
   const { viewport } = useThree() // Получаем размеры экрана в 3D единицах
-
+  const isMovingRef = useRef<boolean>(false);
 
   // Вспомогательные переменные для расчетов (чтобы не создавать новые каждый кадр)
   const targetPos = useMemo(() => new THREE.Vector3(0, 0, -0.5), [])
@@ -32,9 +32,10 @@ export const ControlledMesh = (props: {
       const targetSpeed = 0.6 + inputIntensity * 30.0
       actionRef.current.timeScale = THREE.MathUtils.lerp(actionRef.current.timeScale, targetSpeed, 0.1)
     }
-
+    isMovingRef.current = joystickData.active;
     // 2. Плавное движение (Lerp)
     if (joystickData.active) {
+      
       const moveSpeed = 3 * delta
       // Вычисляем смещение
       targetPos.x += joystickData.x * moveSpeed
@@ -64,12 +65,13 @@ export const ControlledMesh = (props: {
       
         {/* ПУЗЫРЬКИ! 🫧 */}
         <TopDownBubbleTrail
+          isMovingRef={isMovingRef}
           sharkRef={props.meshRef}
-          count={400}                 // много пузырьков
+          count={1000}                 // много пузырьков
           bubbleColor="#aaddff"        // нежно-голубые
           bubbleSize={0.03}             // крупные, чтобы было видно сверху
-          riseSpeed={0.004}              // медленно поднимаются
-          trailWidth={0.005}             // широкий след
+          riseSpeed={0.04}              // медленно поднимаются
+          trailWidth={0.05}             // широкий след
           trailDensity={0.3}           // очень плотный
           maxHeight={0.1}              // высоко поднимаются
         />
