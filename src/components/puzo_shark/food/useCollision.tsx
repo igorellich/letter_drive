@@ -13,7 +13,7 @@ export const useCollision = (
     if (!playerRef.current) return
 
     items.forEach(item => {
-      if (item.ref && item.ref.current) {
+      if (item.ref && item.ref.current && !item.eaten) {
         // Получаем реальную позицию объекта в пространстве (с учетом анимации)
         item.ref.current.getWorldPosition(worldPos)
         const playerworldPos= new THREE.Vector3();

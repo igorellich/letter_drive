@@ -17,13 +17,21 @@ export const Scene = () => {
 
     // Callback для удаления съеденного объекта
     const handleEat = useCallback((id: number) => {
-        setFoodItems(prev => prev.filter(item => item.id !== id))
+        const item = foodItems.filter(f => f.id == id)[0];
+        
+        if (item) {
+            item.eaten = true;
+            setFoodItems([...foodItems])
+            setTimeout(() => {
+                setFoodItems(prev => prev.filter(item => item.id !== id))
+            }, 2000)
+        }
 
         // // Эффект роста (опционально)
         // if (sharkRef.current) {
         //     sharkRef.current.scale.addScalar(0.02)
         // }
-    }, [])
+    }, [foodItems])
 
     
 

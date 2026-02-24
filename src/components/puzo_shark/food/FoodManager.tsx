@@ -9,6 +9,7 @@ export interface FoodItem {
   position: THREE.Vector3
   // Добавляем ref, чтобы коллизии видели реальное положение меша, а не стейт
   ref?: React.RefObject<THREE.Group> 
+  eaten?:boolean
 }
 
 interface FoodManagerProps {
@@ -38,7 +39,8 @@ export const FoodManager = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setFoodItems(prev => {
-        if (prev.length >= maxItems) return prev
+        const notEatenCount = prev.filter(f=>!f.eaten).length
+        if (notEatenCount >= maxItems) return prev
 
         const margin = 1
         const x = (Math.random() - 0.5) * (viewport.width - margin)
