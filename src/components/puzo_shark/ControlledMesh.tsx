@@ -80,7 +80,7 @@ export const ControlledMesh = (props: {
       }
 
       // 2. ДВИЖЕНИЕ
-      targetPos.addScaledVector(currentDir, 11.0 * delta);
+      targetPos.addScaledVector(currentDir, 3.0 * delta);
 
       // 3. ПОГЛОЩЕНИЕ ТОЧКИ
       // Увеличили радиус до 0.8, чтобы меш "пролетал" через точки плавнее
@@ -94,7 +94,7 @@ export const ControlledMesh = (props: {
         pathRef.current = [];
         updateLineVisual();
       }
-      const joySpeed = 6 * delta;
+      const joySpeed = 10 * delta;
       targetPos.x += joystickData.x * joySpeed;
       targetPos.y += joystickData.y * joySpeed;
       
@@ -117,7 +117,7 @@ export const ControlledMesh = (props: {
     }
 
     if (actionRef.current) {
-      const ts = moving ? (path.length > 0 ? 6.0 : 3.5) : 0.6;
+      const ts = moving ? (path.length > 0 || joystickData.active ? 11.0 : 3.5) : 0.6;
       actionRef.current.timeScale = THREE.MathUtils.lerp(actionRef.current.timeScale, ts, 0.2);
     }
   });
@@ -157,7 +157,8 @@ export const ControlledMesh = (props: {
         isMovingRef={isMovingRef} 
         sharkRef={meshRef} 
         count={400} 
-        bubbleSize={0.02} 
+        bubbleSize={0.03}
+
       />
     </group>
   )
