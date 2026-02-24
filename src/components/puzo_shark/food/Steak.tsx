@@ -1,6 +1,6 @@
 import { useRef, useMemo } from "react"
 import { useFrame } from "@react-three/fiber"
-import { Center, useGLTF } from "@react-three/drei"
+import { Center, useGLTF, PointMaterial } from "@react-three/drei"
 import * as THREE from "three"
 import type { FoodItem } from "./FoodManager"
 
@@ -9,19 +9,24 @@ export const Steak = (props: { item: FoodItem }) => {
   const { scene } = useGLTF('/models/toon_steak.glb')
   const clone = useMemo(() => scene.clone(), [scene])
   
-  const particlesCount = 100
+  const particlesCount = 50 // Меньше частиц, но они крупнее
   
-  // Создаем геометрию один раз
-  const particlesGeometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry()
+  // Создаем начальные позиции и направления разлета
+  const [positions, stepVectors] = useMemo(() => {
     const pos = new Float32Array(particlesCount * 3)
+    const steps = []
     for (let i = 0; i < particlesCount; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 0.5
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 0.5
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 0.5
+      // Все частицы начинаются в центре (0,0,0)
+      pos[i * 3] = 0; pos[i * 3 + 1] = 0; pos[i * 3 + 2] = 0;
+      
+      // Генерируем случайный вектор разлета во все стороны
+      steps.push(new THREE.Vector3(
+        (Math.random() - 0.5) * 0.05,
+        (Math.random() - 0.5) * 0.05,
+        (Math.random() - 0.5) * 0.05
+      ))
     }
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-    return geo
+    return [pos, steps]
   }, [])
 
   const particlesRef = useRef<THREE.Points>(null!)
@@ -32,45 +37,61 @@ export const Steak = (props: { item: FoodItem }) => {
     }
 
     if (item.eaten && particlesRef.current) {
-      // Делаем видимыми, когда съедено
       particlesRef.current.visible = true
-      
+      const geo = particlesRef.current.geometry
+      const posAttr = geo.attributes.position
       const mat = particlesRef.current.material as THREE.PointsMaterial
+
       if (mat.opacity > 0) {
-        mat.opacity -= delta * 1.0  // Скорость исчезновения
-        particlesRef.current.scale.addScalar(delta * 1.5) // Расширение
-        particlesRef.current.position.z += delta * 1.0   // Движение вверх
+        // 1. Плавное исчезновение
+        mat.opacity -= delta * 0.8
+        
+        // 2. Увеличение размера (эффект расширения газа)
+        mat.size += delta * 0.5
+
+        // 3. Двигаем каждую частицу по её вектору
+        for (let i = 0; i < particlesCount; i++) {
+          posAttr.setXYZ(
+            i,
+            posAttr.getX(i) + stepVectors[i].x,
+            posAttr.getY(i) + stepVectors[i].y,
+            posAttr.getZ(i) + stepVectors[i].z
+          )
+        }
+        posAttr.needsUpdate = true
       } else {
-        particlesRef.current.visible = false // Полностью скрываем в конце
+        particlesRef.current.visible = false
       }
     }
   })
 
   return (
     <group position={item.position}>
-      {/* Стейк */}
       <Center ref={item.ref} top visible={!item.eaten}>
-          <primitive
-            object={clone}
-            scale={0.005}
-            position={[0, -0.4, 0]}
-            rotation={[Math.PI / 2, Math.PI, 0]}
-          />
+        <primitive
+          object={clone}
+          scale={0.005}
+          position={[0, -0.4, 0]}
+          rotation={[Math.PI / 2, Math.PI, 0]}
+        />
       </Center>
 
-      {/* Частицы крови */}
-      <points 
-        ref={particlesRef} 
-        geometry={particlesGeometry} 
-        visible={false}
-      >
-        <pointsMaterial
+      <points ref={particlesRef} visible={false}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            args={[positions, 3]}
+          />
+        </bufferGeometry>
+        {/* PointMaterial из Drei автоматически делает точки мягкими кругами */}
+        <PointMaterial
           transparent
-          color="#ff0000"
-          size={0.04}           // Уменьши, если слишком большие
+          color="#aa0000"
+          size={0.02}            // Начальный крупный размер
           sizeAttenuation={true}
           depthWrite={false}
-          blending={THREE.AdditiveBlending} // Сделает их "светящимися"
+          opacity={1}
+          blending={THREE.NormalBlending} 
         />
       </points>
     </group>
