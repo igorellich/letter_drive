@@ -4,7 +4,7 @@ import * as THREE from 'three'
 export const useCollision = (
   playerRef: React.RefObject<THREE.Mesh>, 
   items: FoodItem[], 
-  onEat: (id: number) => void,
+  onEat: (id: string) => void,
   distance: number
 ) => {
   const worldPos = new THREE.Vector3()
@@ -20,6 +20,7 @@ export const useCollision = (
         playerRef.current!.getWorldPosition(playerworldPos);
         // console.log(playerworldPos.distanceTo(worldPos))
         if (playerworldPos.distanceTo(worldPos) < distance) {
+          item.eaten = true;
           onEat(item.id)
         }
       }

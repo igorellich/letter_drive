@@ -1,6 +1,6 @@
-import { useRef, useMemo } from "react"
+import { useRef, useMemo, useState } from "react"
 import { useFrame } from "@react-three/fiber"
-import { Center, useGLTF, PointMaterial } from "@react-three/drei"
+import { Center, useGLTF, PointMaterial, Html } from "@react-three/drei" // Добавили Html
 import * as THREE from "three"
 import type { FoodItem } from "./FoodManager"
 
@@ -8,18 +8,14 @@ export const Steak = (props: { item: FoodItem }) => {
   const { item } = props
   const { scene } = useGLTF('/models/toon_steak.glb')
   const clone = useMemo(() => scene.clone(), [scene])
-  
-  const particlesCount = 50 // Меньше частиц, но они крупнее
-  
-  // Создаем начальные позиции и направления разлета
+  const [eaten, setEaten] = useState<boolean>(false);
+  const particlesCount = 50
+
   const [positions, stepVectors] = useMemo(() => {
     const pos = new Float32Array(particlesCount * 3)
     const steps = []
     for (let i = 0; i < particlesCount; i++) {
-      // Все частицы начинаются в центре (0,0,0)
       pos[i * 3] = 0; pos[i * 3 + 1] = 0; pos[i * 3 + 2] = 0;
-      
-      // Генерируем случайный вектор разлета во все стороны
       steps.push(new THREE.Vector3(
         (Math.random() - 0.5) * 0.05,
         (Math.random() - 0.5) * 0.05,
@@ -32,8 +28,9 @@ export const Steak = (props: { item: FoodItem }) => {
   const particlesRef = useRef<THREE.Points>(null!)
 
   useFrame((_, delta) => {
+    setEaten(!!item.eaten)
     if (item.ref && item.ref.current && !item.eaten) {
-      item.ref.current.rotation.z += 0.04
+      item.ref.current.rotation.z += 0.01
     }
 
     if (item.eaten && particlesRef.current) {
@@ -43,13 +40,8 @@ export const Steak = (props: { item: FoodItem }) => {
       const mat = particlesRef.current.material as THREE.PointsMaterial
 
       if (mat.opacity > 0) {
-        // 1. Плавное исчезновение
         mat.opacity -= delta * 0.8
-        
-        // 2. Увеличение размера (эффект расширения газа)
         mat.size += delta * 0.5
-
-        // 3. Двигаем каждую частицу по её вектору
         for (let i = 0; i < particlesCount; i++) {
           posAttr.setXYZ(
             i,
@@ -67,31 +59,55 @@ export const Steak = (props: { item: FoodItem }) => {
 
   return (
     <group position={item.position}>
-      <Center ref={item.ref} top visible={!item.eaten}>
-        <primitive
-          object={clone}
-          scale={0.005}
-          position={[0, -0.4, 0]}
-          rotation={[Math.PI / 2, Math.PI, 0]}
-        />
-      </Center>
+      {/* Отображение Label */}
+      {item.label && !eaten && (
+        <>
+          <Html
+            position={[0, 0.3, 0]} // Чуть выше стейка
+            center                 // Центрируем текст относительно точки
+            distanceFactor={6}     // Уменьшает текст при отдалении камеры
+          >
+            <div style={{
+              color: 'white',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+              background: 'rgba(0,0,0,0.4)',
+              padding: '2px 8px',
+              borderRadius: '10px',
+              fontSize: '32px',
+              fontWeight: 'bold',
+              fontFamily: 'sans-serif',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none', // Чтобы текст не мешал кликам
+              userSelect: 'none'
+            }}>
+              {item.label}
+            </div>
+          </Html>
+          <Center ref={item.ref} top visible={!eaten}>
+            <primitive
+              object={clone}
+              scale={0.005}
+              position={[0, -0.4, 0]}
+              rotation={[Math.PI / 2, Math.PI, 0]}
+            />
+          </Center>
+        </>
+      )}
+
+
 
       <points ref={particlesRef} visible={false}>
         <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[positions, 3]}
-          />
+          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         </bufferGeometry>
-        {/* PointMaterial из Drei автоматически делает точки мягкими кругами */}
         <PointMaterial
           transparent
           color="#aa0000"
-          size={0.02}            // Начальный крупный размер
+          size={0.02}
           sizeAttenuation={true}
           depthWrite={false}
           opacity={1}
-          blending={THREE.NormalBlending} 
+          blending={THREE.NormalBlending}
         />
       </points>
     </group>
