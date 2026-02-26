@@ -69,7 +69,7 @@ export const Scene = ({ test, joystickData }: IGameSceneProps) => {
 
     // Выбор нового вопроса
     useEffect(() => {
-        const leftQuestions = test.questions.filter((q, i) => !usedIndexes.includes(i))
+        const leftQuestions = test.questions.filter((_, i) => !usedIndexes.includes(i))
         if (leftQuestions.length === 0) return; // Тест окончен
 
         const randomIndex = Math.floor(Math.random() * leftQuestions.length);
