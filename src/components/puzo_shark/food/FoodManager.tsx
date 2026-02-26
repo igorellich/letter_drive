@@ -11,6 +11,8 @@ export interface FoodItem {
   ref?: React.RefObject<THREE.Group>
   eaten?: boolean
   label?: string
+
+  right:boolean
 }
 
 interface FoodManagerProps {

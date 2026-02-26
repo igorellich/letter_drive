@@ -102,7 +102,7 @@ export const Steak = (props: { item: FoodItem }) => {
         </bufferGeometry>
         <PointMaterial
           transparent
-          color="#aa0000"
+          color={item.right?"#00aa00":"#aa0000"}
           size={0.02}
           sizeAttenuation={true}
           depthWrite={false}
