@@ -2,7 +2,7 @@ import { StrictMode, useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { Scene } from './components/puzo_shark/Scene'
-import test from './components/puzo_shark/food/tests/math/simple';
+import test from './components/puzo_shark/food/tests/math/30ex';
 import { type JoystickData } from './components/puzo_shark/Joystick';
 import { Canvas } from '@react-three/fiber';
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
