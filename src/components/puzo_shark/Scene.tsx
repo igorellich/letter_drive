@@ -107,7 +107,7 @@ export const Scene = ({ test, joystickData }: IGameSceneProps) => {
             <ambientLight intensity={2} />
             
             {question && (
-                <Html fullscreen>
+                <Html fullscreen style={{pointerEvents:'none'}}>
                     <div style={{
                         position: 'absolute',
                         top: '40px',
@@ -126,7 +126,7 @@ export const Scene = ({ test, joystickData }: IGameSceneProps) => {
                         borderRadius: '20px',
                         fontFamily: 'sans-serif'
                     }}>
-                        {question.question}
+                        {question?.question}
                     </div>
                 </Html>
             )}

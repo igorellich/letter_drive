@@ -18,17 +18,30 @@ const App = () => {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((e) => {
-        console.error(`Ошибка: ${e.message}`)
+ const toggleFullscreen = () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen()
+      .then(() => {
+        // Блокируем ориентацию в landscape после входа в full screen
+        //@ts-ignore
+        if (screen.orientation && screen.orientation.lock) {
+          //@ts-ignore
+          screen.orientation.lock('landscape').catch((err) => {
+            console.warn("Ориентация не заблокирована:", err);
+          });
+        }
       })
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen()
+      .catch((e) => console.error(`Ошибка: ${e.message}`));
+  } else {
+    if (document.exitFullscreen) {
+      // При выходе разблокируем ориентацию
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
       }
+      document.exitFullscreen();
     }
   }
+}
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden' }}>
