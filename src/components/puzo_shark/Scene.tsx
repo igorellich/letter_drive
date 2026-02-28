@@ -103,7 +103,7 @@ export const Scene = ({ test, joystickData }: IGameSceneProps) => {
 
     return (
         <>
-            <Stats />
+            {import.meta.env.DEV && <Stats />}
             <ambientLight intensity={2} />
             
             {question && (

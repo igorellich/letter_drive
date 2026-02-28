@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { Scene } from './components/puzo_shark/Scene'
 import test from './components/puzo_shark/food/tests/math/simple';
-import { Joystick, type JoystickData } from './components/puzo_shark/Joystick';
+import { type JoystickData } from './components/puzo_shark/Joystick';
 import { Canvas } from '@react-three/fiber';
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
 const App = () => {
@@ -86,7 +86,7 @@ const App = () => {
       </button>
       <div style={{ width: '100vw', height: '100vh', background: '#001b26', overflow: 'hidden' }}>
 
-        <Joystick joystickData={joystickData} />
+        {/* <Joystick joystickData={joystickData} /> */}
         <Canvas style={{ overflow: 'hidden' }} camera={{ position: [0, 0, 5], fov: 45 }}>
           {/* Твоя 3D Сцена */}
           <Scene joystickData={joystickData} test={test} />
