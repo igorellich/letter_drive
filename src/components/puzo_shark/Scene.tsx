@@ -23,70 +23,80 @@ export const Scene = ({ test, joystickData }: IGameSceneProps) => {
     const [foodItems, setFoodItems] = useState<FoodItem[]>([])
     const [question, setQuestion] = useState<IQuestion>()
 
-    // Функция генерации позиции с проверкой расстояния
-    const createSafeFoodItem = (variant: string, existingItems: FoodItem[], right: boolean): FoodItem => {
-        const margin = 1.5;
-        const minDistance = 5.5; // Минимальный радиус пустого пространства вокруг
-        let x = 0;
-        let y = 0;
-        let isTooClose = true;
+    // Константы сетки
+    const GRID_X = 16;
+    const GRID_Y = 9;
+    const MIN_CELL_DIST = 3;
+
+    const generateGridPositions = useCallback((count: number): THREE.Vector3[] => {
+    const cellW = viewport.width / GRID_X;
+    const cellH = viewport.height / GRID_Y;
+    
+    const occupiedCells: THREE.Vector2[] = [];
+    const positions: THREE.Vector3[] = [];
+
+    const sharkGridPos = sharkRef.current 
+        ? new THREE.Vector2(
+            Math.round((sharkRef.current.position.x / cellW) + (GRID_X / 2)),
+            Math.round((sharkRef.current.position.y / cellH) + (GRID_Y / 2))
+        )
+        : new THREE.Vector2(GRID_X / 2, GRID_Y / 2);
+
+    for (let i = 0; i < count; i++) {
+        let found = false;
         let attempts = 0;
 
-        // Текущая позиция акулы (если еще не отрендерена - центр 0,0)
-        const sharkPos = sharkRef.current 
-            ? new THREE.Vector2(sharkRef.current.position.x, sharkRef.current.position.y) 
-            : new THREE.Vector2(0, 0);
+        while (!found && attempts < 200) {
+            // ОГРАНИЧЕНИЕ: gy генерируется от 1 до GRID_Y - 3 (убираем верхние 2 ряда)
+            const gx = Math.floor(Math.random() * (GRID_X - 2)) + 1;
+            const gy = Math.floor(Math.random() * (GRID_Y - 4)) + 1; // Запас под текст
+            
+            const currentCell = new THREE.Vector2(gx, gy);
+            const distToShark = currentCell.distanceTo(sharkGridPos);
+            const distToOthers = occupiedCells.every(cell => 
+                currentCell.distanceTo(cell) >= MIN_CELL_DIST
+            );
 
-        while (isTooClose && attempts < 100) {
-            x = (Math.random() - 0.5) * (viewport.width - margin);
-            y = (Math.random() - 0.5) * (viewport.height - margin);
-            
-            const newPos = new THREE.Vector2(x, y);
-            
-            // 1. Проверка расстояния до акулы
-            const distToShark = newPos.distanceTo(sharkPos);
-            
-            // 2. Проверка расстояния до уже созданных в этом цикле стейков
-            const distToOthers = existingItems.every(item => {
-                const itemPos = new THREE.Vector2(item.position.x, item.position.y);
-                return newPos.distanceTo(itemPos) > minDistance;
-            });
-
-            if (distToShark > minDistance && distToOthers) {
-                isTooClose = false;
+            if (distToShark >= MIN_CELL_DIST && distToOthers) {
+                occupiedCells.push(currentCell);
+                const worldX = (gx - GRID_X / 2) * cellW + cellW / 2;
+                const worldY = (gy - GRID_Y / 2) * cellH + cellH / 2;
+                positions.push(new THREE.Vector3(worldX, worldY, -0.01));
+                found = true;
             }
             attempts++;
         }
-
-        return {
-            id: variant,
-            label: variant,
-            position: new THREE.Vector3(x, y, -0.01),
-            ref: React.createRef() as React.RefObject<THREE.Group>,
-            right
-        };
     }
+    return positions;
+}, [viewport.width, viewport.height]);
+
 
     // Выбор нового вопроса
     useEffect(() => {
         const leftQuestions = test.questions.filter((_, i) => !usedIndexes.includes(i))
-        if (leftQuestions.length === 0) return; // Тест окончен
+        if (leftQuestions.length === 0) return;
 
         const randomIndex = Math.floor(Math.random() * leftQuestions.length);
         setQuestion(leftQuestions[randomIndex])
     }, [usedIndexes, test.questions])
 
-    // Спавн еды при смене вопроса
+    // Спавн еды по сетке при смене вопроса
     useEffect(() => {
         if (question) {
-            const newFoodItems: FoodItem[] = [];
-            for (const variant of question.variants) {
-                const foodItem = createSafeFoodItem(variant, newFoodItems, question.answer.includes(variant));
-                newFoodItems.push(foodItem);
-            }
+            const positions = generateGridPositions(question.variants.length);
+            
+            const newFoodItems: FoodItem[] = question.variants.map((variant, index) => ({
+                id: variant,
+                label: variant,
+                position: positions[index] || new THREE.Vector3(0, 0, -10), // fallback если место не нашлось
+                ref: React.createRef() as React.RefObject<THREE.Group>,
+                right: question.answer.includes(variant),
+                eaten: false
+            }));
+            
             setFoodItems(newFoodItems);
         }
-    }, [question, viewport])
+    }, [question, generateGridPositions])
 
     const handleEat = useCallback((id: string) => {
         setFoodItems(prev => prev.map(item => 
@@ -96,9 +106,11 @@ export const Scene = ({ test, joystickData }: IGameSceneProps) => {
         setTimeout(() => {
             if (question) {
                 const questionIndex = test.questions.findIndex(q => q.question === question.question);
-                setUsedIndexes(prev => [...prev, questionIndex]);
+                if (questionIndex !== -1) {
+                    setUsedIndexes(prev => [...prev, questionIndex]);
+                }
             }
-        }, 1000)
+        }, 800)
     }, [question, test.questions])
 
     return (
@@ -107,16 +119,14 @@ export const Scene = ({ test, joystickData }: IGameSceneProps) => {
             <ambientLight intensity={2} />
             
             {question && (
-                <Html fullscreen style={{pointerEvents:'none'}}>
+                <Html fullscreen style={{ pointerEvents: 'none' }}>
                     <div style={{
                         position: 'absolute',
-                        top: '40px',
+                        top: '0px',
                         left: '50%',
                         transform: 'translateX(-50%)',
                         width: 'max-content',
                         textAlign: 'center',
-                        pointerEvents: 'none',
-                        userSelect: 'none',
                         color: 'white',
                         fontSize: '32px',
                         fontWeight: 'bold',
@@ -124,9 +134,10 @@ export const Scene = ({ test, joystickData }: IGameSceneProps) => {
                         background: 'rgba(0,0,0,0.4)',
                         padding: '10px 30px',
                         borderRadius: '20px',
-                        fontFamily: 'sans-serif'
+                        fontFamily: 'sans-serif',
+                        userSelect: 'none'
                     }}>
-                        {question?.question}
+                        {question.question}
                     </div>
                 </Html>
             )}
