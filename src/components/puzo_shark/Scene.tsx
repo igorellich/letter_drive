@@ -23,7 +23,7 @@ export const Scene = ({ test, joystickData, paused }: IGameSceneProps) => {
     const { viewport } = useThree();
     const [foodItems, setFoodItems] = useState<FoodItem[]>([])
     const [question, setQuestion] = useState<IQuestion>()
-    
+    console.log(paused);
     // Константы сетки
     const GRID_X = 16;
     const GRID_Y = 9;

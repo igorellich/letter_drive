@@ -1,4 +1,4 @@
-import { StrictMode, useState, useEffect, Suspense } from 'react'
+import { StrictMode, useState, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { Scene } from './components/puzo_shark/Scene'
@@ -13,7 +13,7 @@ import { TwoGrade } from './components/puzo_shark/food/tests/grades/2grade/2Grad
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
 
 const App = () => {
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  
   const [gameStarted, setGameStarted] = useState(false)
   const [paused, setPaused] = useState(true)
   
@@ -21,11 +21,7 @@ const App = () => {
   const [selectedTest, setSelectedTest] = useState<ITest | null>(null)
   const [currentGrade, setCurrentGrade] = useState<IGrade | null>(null)
 
-  useEffect(() => {
-    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement)
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
-  }, [])
+ 
 
   const toggleFullscreen = (force?: boolean) => {
     const shouldEnter = force !== undefined ? force : !document.fullscreenElement;
