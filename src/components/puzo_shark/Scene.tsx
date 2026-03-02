@@ -13,16 +13,17 @@ import type { JoystickData } from "./Joystick"
 
 interface IGameSceneProps {
     test: ITest,
-    joystickData: JoystickData
+    joystickData: JoystickData,
+    paused: boolean
 }
 
-export const Scene = ({ test, joystickData }: IGameSceneProps) => {
+export const Scene = ({ test, joystickData, paused }: IGameSceneProps) => {
     const sharkRef = useRef<THREE.Mesh>(null!);
     const [usedIndexes, setUsedIndexes] = useState<number[]>([]);
     const { viewport } = useThree();
     const [foodItems, setFoodItems] = useState<FoodItem[]>([])
     const [question, setQuestion] = useState<IQuestion>()
-
+    
     // Константы сетки
     const GRID_X = 16;
     const GRID_Y = 9;
