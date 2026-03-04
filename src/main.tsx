@@ -151,7 +151,7 @@ const backButtonStyle = {
 };
 
 const pauseIconStyle: React.CSSProperties = {
-  position: 'absolute', top: '20px', right: '20px', zIndex: 1000,
+  position: 'absolute', top: '20px', right: '80px', zIndex: 1000,
   width: '50px', height: '50px', backgroundColor: 'rgba(0, 0, 0, 0.5)',
   border: '2px solid rgba(255, 255, 255, 0.3)', borderRadius: '15px', 
   cursor: 'pointer', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center'

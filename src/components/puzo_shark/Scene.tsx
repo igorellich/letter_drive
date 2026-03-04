@@ -15,7 +15,7 @@ interface IGameSceneProps {
     test: ITest,
     joystickData: JoystickData,
     paused: boolean,
-    onBack: () => void // Добавлен проп для возврата
+    onBack: () => void
 }
 
 type AnswerResult = 'correct' | 'wrong' | 'pending';
@@ -29,11 +29,13 @@ export const Scene = ({ test, joystickData, paused, onBack }: IGameSceneProps) =
     const [results, setResults] = useState<AnswerResult[]>(new Array(10).fill('pending'));
     const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
 
+    // Константы сетки
     const GRID_X = 16;
     const GRID_Y = 9;
     const MIN_CELL_DIST = 3;
+    // Отступ справа (в ячейках сетки), чтобы еда не попадала под прогресс-бар
+    const RIGHT_MARGIN_CELLS = 2; 
 
-    // 1. Инициализация сессии
     useEffect(() => {
         if (test.questions.length === 0) return;
         const allIndexes = test.questions.map((_, i) => i);
@@ -41,7 +43,6 @@ export const Scene = ({ test, joystickData, paused, onBack }: IGameSceneProps) =
         setSessionIndexes(shuffled.slice(0, 10));
     }, [test]);
 
-    // Текущий активный вопрос
     const currentQuestion = useMemo(() => {
         if (sessionIndexes.length > 0 && currentIndex < sessionIndexes.length) {
             return test.questions[sessionIndexes[currentIndex]];
@@ -49,7 +50,6 @@ export const Scene = ({ test, joystickData, paused, onBack }: IGameSceneProps) =
         return null;
     }, [currentIndex, sessionIndexes, test.questions]);
 
-    // Генерация позиций
     const generateGridPositions = useCallback((count: number): THREE.Vector3[] => {
         const cellW = viewport.width / GRID_X;
         const cellH = viewport.height / GRID_Y;
@@ -67,8 +67,10 @@ export const Scene = ({ test, joystickData, paused, onBack }: IGameSceneProps) =
             let found = false;
             let attempts = 0;
             while (!found && attempts < 200) {
-                const gx = Math.floor(Math.random() * (GRID_X - 2)) + 1;
+                // ОГРАНИЧЕНИЕ: gx генерируется от 1 до GRID_X - RIGHT_MARGIN_CELLS (отступ справа)
+                const gx = Math.floor(Math.random() * (GRID_X - 2 - RIGHT_MARGIN_CELLS)) + 1;
                 const gy = Math.floor(Math.random() * (GRID_Y - 4)) + 1; 
+                
                 const currentCell = new THREE.Vector2(gx, gy);
                 if (currentCell.distanceTo(sharkGridPos) >= MIN_CELL_DIST && 
                     occupiedCells.every(c => currentCell.distanceTo(c) >= MIN_CELL_DIST)) {
@@ -86,7 +88,6 @@ export const Scene = ({ test, joystickData, paused, onBack }: IGameSceneProps) =
         return positions;
     }, [viewport.width, viewport.height]);
 
-    // 2. Спавн еды
     useEffect(() => {
         if (currentQuestion) {
             const positions = generateGridPositions(currentQuestion.variants.length);
@@ -102,10 +103,8 @@ export const Scene = ({ test, joystickData, paused, onBack }: IGameSceneProps) =
         }
     }, [currentQuestion, generateGridPositions]);
 
-    // 3. Обработка поедания
     const handleEat = useCallback((id: string) => {
         if (!currentQuestion) return;
-
         const isCorrect = currentQuestion.answer.includes(id);
 
         setResults(prev => {
@@ -114,9 +113,7 @@ export const Scene = ({ test, joystickData, paused, onBack }: IGameSceneProps) =
             return newResults;
         });
 
-        setFoodItems(prev => prev.map(item => 
-            item.id === id ? { ...item, eaten: true } : item
-        ));
+        setFoodItems(prev => prev.map(item => item.id === id ? { ...item, eaten: true } : item));
 
         setTimeout(() => {
             setCurrentIndex(prev => prev + 1);
@@ -131,88 +128,93 @@ export const Scene = ({ test, joystickData, paused, onBack }: IGameSceneProps) =
             <ambientLight intensity={2} />
             
             <Html fullscreen style={{ pointerEvents: 'none' }}>
-                <div style={{
-                    position: 'absolute',
-                    top: '20px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '15px',
-                    width: '100%',
-                    fontFamily: 'sans-serif'
-                }}>
-                    {/* Шкала прогресса */}
-                    <div style={{ display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.6)', padding: '12px', borderRadius: '15px', backdropFilter: 'blur(5px)' }}>
+                <div style={{ position: 'relative', width: '100%', height: '100%', fontFamily: 'sans-serif' }}>
+                    
+                    {/* Текст вопроса сверху */}
+                    {currentQuestion && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '20px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            textAlign: 'center',
+                            color: 'white',
+                            fontSize: '28px',
+                            fontWeight: 'bold',
+                            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+                            background: 'rgba(0,0,0,0.4)',
+                            padding: '10px 30px',
+                            borderRadius: '15px',
+                            maxWidth: '70%'
+                        }}>
+                            {currentQuestion.question}
+                        </div>
+                    )}
+
+                    {/* ВЕРТИКАЛЬНАЯ ШКАЛА СПРАВА */}
+                    <div style={{ 
+                        position: 'absolute', 
+                        right: '20px', 
+                        top: '50%', 
+                        transform: 'translateY(-50%)',
+                        display: 'flex', 
+                        flexDirection: 'column-reverse', // Чтобы 1-й вопрос был снизу или сверху (по вкусу)
+                        gap: '10px', 
+                        background: 'rgba(0,0,0,0.6)', 
+                        padding: '15px 10px', 
+                        borderRadius: '20px', 
+                        backdropFilter: 'blur(5px)',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                    }}>
                         {results.map((res, i) => (
                             <div key={i} style={{
-                                width: '30px',
-                                height: '14px',
+                                width: '14px',
+                                height: '30px',
                                 borderRadius: '4px',
-                                border: i === currentIndex ? '2px solid white' : '1px solid rgba(255,255,255,0.3)',
+                                border: i === currentIndex ? '2px solid white' : '1px solid rgba(255,255,255,0.2)',
                                 backgroundColor: 
                                     res === 'correct' ? '#4ade80' : 
                                     res === 'wrong' ? '#f87171' : 
                                     '#374151',
-                                transition: 'background-color 0.4s ease, transform 0.2s ease',
-                                transform: i === currentIndex ? 'scale(1.1)' : 'scale(1)'
+                                transition: 'all 0.3s ease',
+                                transform: i === currentIndex ? 'scale(1.2)' : 'scale(1)',
+                                boxShadow: i === currentIndex ? '0 0 10px white' : 'none'
                             }} />
                         ))}
                     </div>
 
-                    {currentQuestion ? (
+                    {/* ЭКРАН ЗАВЕРШЕНИЯ */}
+                    {isFinished && (
                         <div style={{
-                            textAlign: 'center',
-                            color: 'white',
-                            fontSize: '32px',
-                            fontWeight: 'bold',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                            background: 'rgba(0,0,0,0.4)',
-                            padding: '10px 40px',
-                            borderRadius: '20px',
-                            maxWidth: '80%',
-                            userSelect: 'none'
-                        }}>
-                            {currentQuestion.question}
-                        </div>
-                    ) : isFinished && (
-                        <div style={{
-                            background: 'rgba(0,0,0,0.9)',
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            background: 'rgba(0,0,0,0.95)',
                             padding: '40px',
                             borderRadius: '30px',
                             textAlign: 'center',
                             color: 'white',
                             border: '4px solid #4ade80',
-                            pointerEvents: 'auto', // Включаем клики
-                            boxShadow: '0 0 20px rgba(74, 222, 128, 0.4)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '20px'
+                            pointerEvents: 'auto',
+                            boxShadow: '0 0 30px rgba(0,0,0,0.5)'
                         }}>
-                            <div>
-                                <h2 style={{ margin: '0 0 10px 0', fontSize: '36px' }}>ТЕСТ ЗАВЕРШЕН</h2>
-                                <p style={{ fontSize: '28px', margin: 0, color: '#4ade80' }}>
-                                    Правильно: {results.filter(r => r === 'correct').length} из 10
-                                </p>
-                            </div>
-                            
+                            <h2 style={{ fontSize: '36px', marginBottom: '10px' }}>ИТОГ</h2>
+                            <p style={{ fontSize: '28px', color: '#4ade80', marginBottom: '30px' }}>
+                                Результат: {results.filter(r => r === 'correct').length} / 10
+                            </p>
                             <button 
                                 onClick={onBack}
                                 style={{
-                                    padding: '12px 24px',
+                                    padding: '15px 40px',
                                     fontSize: '20px',
                                     fontWeight: 'bold',
                                     color: 'white',
                                     background: '#4ade80',
                                     border: 'none',
-                                    borderRadius: '12px',
-                                    cursor: 'pointer',
-                                    transition: 'transform 0.1s active',
-                                    boxShadow: '0 4px 0 #166534'
+                                    borderRadius: '15px',
+                                    cursor: 'pointer'
                                 }}
-                                onMouseDown={(e) => (e.currentTarget.style.transform = 'translateY(2px)')}
-                                onMouseUp={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
                             >
                                 К ВЫБОРУ ТЕСТА
                             </button>
