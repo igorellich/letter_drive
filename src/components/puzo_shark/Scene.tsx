@@ -7,20 +7,20 @@ import * as THREE from 'three'
 import { Shark } from "./Shark"
 import { FoodManager, type FoodItem } from "./food/FoodManager"
 import { Steak } from "./food/Steak"
-import type { IQuestion, ITest } from "./food/tests/interfaces"
+import type { ITest } from "./food/tests/interfaces"
 import React from "react"
 import type { JoystickData } from "./Joystick"
 
 interface IGameSceneProps {
     test: ITest,
     joystickData: JoystickData,
-    paused: boolean,
+    paused?: boolean,
     onBack: () => void
 }
 
 type AnswerResult = 'correct' | 'wrong' | 'pending';
 
-export const Scene = ({ test, joystickData, paused, onBack }: IGameSceneProps) => {
+export const Scene = ({ test, joystickData, onBack }: IGameSceneProps) => {
     const sharkRef = useRef<THREE.Mesh>(null!);
     const { viewport } = useThree();
     
