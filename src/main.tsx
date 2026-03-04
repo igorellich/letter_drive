@@ -113,6 +113,7 @@ const App = () => {
         <Suspense fallback={<Loader />}>
           {selectedTest && (
             <Scene 
+            onBack={exitToMenu}
               paused={paused} 
               joystickData={joystickData} 
               test={selectedTest} 
