@@ -9,9 +9,9 @@ import { Steak } from "./food/Steak"
 import type { ITest } from "./food/tests/interfaces"
 
 import type { JoystickData } from "./Joystick"
-import { ProgressScale, type AnswerResult } from "./food/hud/ProgressScale"
-import { TestEndScreen } from "./food/hud/TestEndScreen"
-import { QuestionLabel } from "./food/hud/QuestionLabel"
+import { ProgressScale, type AnswerResult } from "./hud/ProgressScale"
+import { TestEndScreen } from "./hud/TestEndScreen"
+import { QuestionLabel } from "./hud/QuestionLabel"
 import { useFoodItemsGridSpawner } from "./hooks/useFoodItemsGridSpawner"
 
 interface IGameSceneProps {
