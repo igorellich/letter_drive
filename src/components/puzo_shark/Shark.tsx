@@ -1,4 +1,4 @@
-import { useGLTF, useAnimations, Center } from '@react-three/drei'
+import { useGLTF, useAnimations} from '@react-three/drei'
 import { useEffect, type RefObject } from 'react'
 
 import * as THREE from 'three'
@@ -30,16 +30,16 @@ export const Shark = (props:{actionRef:RefObject<THREE.AnimationAction>}) => {
 
 
   return (
-    <group >
-      <Center top position={[0,0,0.45]}> 
+    <group rotation={[0,0,0]} position={[0,0, 0.45]}>
+     
         <primitive 
           object={scene} 
           scale={0.003} 
           // Важно: поворот внутри primitive оставляем статичным, 
           // чтобы "нос" смотрел вперед по оси движения группы
           rotation={[Math.PI / 2, Math.PI, 0]} 
+          
         />
-      </Center>
     </group>
   )
 }
