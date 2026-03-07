@@ -82,7 +82,7 @@ const App = () => {
 
       {/* 3D Сцена */}
       <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-        <Suspense fallback={<Loader />}>
+        {gameStarted && <Suspense fallback={<Loader />}>
           {selectedTest && (
             <Scene
               onBack={exitToMenu}
@@ -91,7 +91,7 @@ const App = () => {
               test={selectedTest}
             />
           )}
-        </Suspense>
+        </Suspense>}
       </Canvas>
     </div>
   )

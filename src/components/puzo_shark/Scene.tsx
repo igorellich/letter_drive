@@ -48,20 +48,27 @@ export const Scene = ({ test, joystickData, onBack }: IGameSceneProps) => {
 
     const handleEat = useCallback((id: string) => {
         if (!currentQuestion) return;
-        const isCorrect = currentQuestion.answer.includes(id);
+        const canEat = foodItems.filter(i => i.eaten === true).length === 0
+        if (canEat) {
+            const eatenItem = foodItems.filter(i => i.id === id)[0];
+            if (eatenItem) {
+                eatenItem.eaten = true;
+                const isCorrect = currentQuestion.answer.includes(id);
 
-        setResults(prev => {
-            const newResults = [...prev];
-            newResults[currentIndex] = isCorrect ? 'correct' : 'wrong';
-            return newResults;
-        });
+                setResults(prev => {
+                    const newResults = [...prev];
+                    newResults[currentIndex] = isCorrect ? 'correct' : 'wrong';
+                    return newResults;
+                });
 
-        setFoodItems(prev => prev.map(item => item.id === id ? { ...item, eaten: true } : item));
+                setFoodItems(prev => prev.map(item => item.id === id ? { ...item, eaten: true } : item));
 
-        setTimeout(() => {
-            setCurrentIndex(prev => prev + 1);
-        }, 800);
-    }, [currentQuestion, currentIndex]);
+                setTimeout(() => {
+                    setCurrentIndex(prev => prev + 1);
+                }, 800);
+            }
+        }
+    }, [currentQuestion, currentIndex, foodItems]);
 
     const isFinished = sessionIndexes.length > 0 && currentIndex >= sessionIndexes.length;
 
