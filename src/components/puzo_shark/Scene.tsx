@@ -51,9 +51,9 @@ export const Scene = ({ test, joystickData, onBack }: IGameSceneProps) => {
         const canEat = foodItems.filter(i => i.eaten === true).length === 0
         if (canEat) {
             const eatenItem = foodItems.filter(i => i.id === id)[0];
-            if (eatenItem) {
+            if (eatenItem && eatenItem.label) {
                 eatenItem.eaten = true;
-                const isCorrect = currentQuestion.answer.includes(id);
+                const isCorrect = currentQuestion.answer.includes(eatenItem.label);
 
                 setResults(prev => {
                     const newResults = [...prev];
