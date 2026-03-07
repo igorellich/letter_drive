@@ -58,7 +58,7 @@ export const useFoodItemsGridSpawner=(controlledMeshRef: RefObject<THREE.Mesh>,
                 if (question) {
                     const positions = generateGridPositions(question.variants.length);
                     const newItems = question.variants.map((variant, index) => ({
-                        id: variant,
+                        id: `${variant}_${question.question}`,
                         label: variant,
                         position: positions[index] || new THREE.Vector3(0, 0, -10),
                         ref: React.createRef() as React.RefObject<THREE.Group>,
