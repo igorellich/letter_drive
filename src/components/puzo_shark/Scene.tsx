@@ -62,10 +62,12 @@ export const Scene = ({ test, joystickData, onBack }: IGameSceneProps) => {
                 });
 
                 setFoodItems(prev => prev.map(item => item.id === id ? { ...item, eaten: true } : item));
-
+                 setTimeout(() => {
+                   setFoodItems(prev => prev.map(item => item.id !== id ? { ...item, eaten: true } : item));
+                }, 1000);
                 setTimeout(() => {
                     setCurrentIndex(prev => prev + 1);
-                }, 2000);
+                }, 3000);
             }
         }
     }, [currentQuestion, currentIndex, foodItems]);

@@ -54,8 +54,7 @@ export const Steak = (props: { item: FoodItem }) => {
 
       // 2. Полет стейка вверх
       if (showSteak && item.right) {
-        groupRef.current.position.y += delta
-        groupRef.current.rotation.z += delta * 2
+        groupRef.current.rotation.z += delta
       }
     }
   })
@@ -95,10 +94,10 @@ export const Steak = (props: { item: FoodItem }) => {
       )}
 
       {/* ТЕКСТ */}
-      {!item.eaten && item.label && (
+      {item.label && (
         <Html position={[0, 0.4, 0]} center distanceFactor={8}>
           <div style={{
-            color: 'white',
+            color:item.eaten?item.right?'green':'red':'white',
             background: 'rgba(0,0,0,0.5)',
             padding: '4px 12px',
             borderRadius: '15px',
