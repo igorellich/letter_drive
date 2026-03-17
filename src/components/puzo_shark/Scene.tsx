@@ -65,7 +65,7 @@ export const Scene = ({ test, joystickData, onBack }: IGameSceneProps) => {
 
                 setTimeout(() => {
                     setCurrentIndex(prev => prev + 1);
-                }, 800);
+                }, 2000);
             }
         }
     }, [currentQuestion, currentIndex, foodItems]);

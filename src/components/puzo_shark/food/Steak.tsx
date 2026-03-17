@@ -1,117 +1,118 @@
 import { useRef, useMemo, useState } from "react"
 import { useFrame } from "@react-three/fiber"
-import { Center, useGLTF, PointMaterial, Html } from "@react-three/drei" // Добавили Html
+import { Center, useGLTF, Html } from "@react-three/drei"
 import * as THREE from "three"
 import type { FoodItem } from "./FoodManager"
 
 export const Steak = (props: { item: FoodItem }) => {
   const { item } = props
-  const { scene } = useGLTF('/models/toon_steak.glb')
-  const clone = useMemo(() => scene.clone(), [scene])
-  const [eaten, setEaten] = useState<boolean>(false);
-  const particlesCount = 50
+  const { scene: steakScene } = useGLTF('/models/toon_steak.glb')
+  const { scene: boxScene } = useGLTF('/models/wooden_box.glb')
+  
+  const steakClone = useMemo(() => steakScene.clone(), [steakScene])
+  const boxClone = useMemo(() => boxScene.clone(), [boxScene])
 
-  const [positions, stepVectors] = useMemo(() => {
-    const pos = new Float32Array(particlesCount * 3)
-    const steps = []
-    for (let i = 0; i < particlesCount; i++) {
-      pos[i * 3] = 0; pos[i * 3 + 1] = 0; pos[i * 3 + 2] = 0;
-      steps.push(new THREE.Vector3(
-        (Math.random() - 0.5) * 0.05,
-        (Math.random() - 0.5) * 0.05,
-        (Math.random() - 0.5) * 0.05
-      ))
+  const groupRef = useRef<THREE.Group>(null!)
+  const pointsRef = useRef<THREE.Points>(null!)
+  
+  const [showSteak, setShowSteak] = useState(false)
+  const [opacity, setOpacity] = useState(1)
+
+  // Генерируем 30 мелких точек
+  const count = 100
+  const [positions, velocities] = useMemo(() => {
+    const pos = new Float32Array(count * 3).fill(0)
+    const vels = new Float32Array(count * 3)
+    for (let i = 0; i < count; i++) {
+      vels[i * 3] = (Math.random() - 0.5) * 0.3
+      vels[i * 3 + 1] = (Math.random() - 0.5) * 0.3
+      vels[i * 3 + 2] = (Math.random() - 0.5) * 0.3
     }
-    return [pos, steps]
+    return [pos, vels]
   }, [])
 
-  const particlesRef = useRef<THREE.Points>(null!)
-
   useFrame((_, delta) => {
-    setEaten(!!item.eaten)
-    if (item.ref && item.ref.current && !item.eaten) {
-      item.ref.current.rotation.z += 0.01
-    }
-
-    if (item.eaten && particlesRef.current) {
-      particlesRef.current.visible = true
-      const geo = particlesRef.current.geometry
-      const posAttr = geo.attributes.position
-      const mat = particlesRef.current.material as THREE.PointsMaterial
-
-      if (mat.opacity > 0) {
-        mat.opacity -= delta * 0.8
-        mat.size += delta * 0.5
-        for (let i = 0; i < particlesCount; i++) {
+    if (item.eaten) {
+      // 1. Анимация разлета частиц (Пуф!)
+      if (opacity > 0 && pointsRef.current) {
+        const geo = pointsRef.current.geometry
+        const posAttr = geo.attributes.position
+        for (let i = 0; i < count; i++) {
           posAttr.setXYZ(
             i,
-            posAttr.getX(i) + stepVectors[i].x,
-            posAttr.getY(i) + stepVectors[i].y,
-            posAttr.getZ(i) + stepVectors[i].z
+            posAttr.getX(i) + velocities[i * 3],
+            posAttr.getY(i) + velocities[i * 3 + 1],
+            posAttr.getZ(i) + velocities[i * 3 + 2]
           )
         }
         posAttr.needsUpdate = true
-      } else {
-        particlesRef.current.visible = false
+        setOpacity(prev => Math.max(0, prev - delta * 2))
+        
+        // Показываем стейк почти сразу после взрыва
+        if (opacity < 0.7 && !showSteak) setShowSteak(true)
+      }
+
+      // 2. Полет стейка вверх
+      if (showSteak && item.right) {
+        groupRef.current.position.y += delta
+        groupRef.current.rotation.z += delta * 2
       }
     }
   })
 
   return (
-    <group position={item.position}>
-      {/* Отображение Label */}
-      {item.label && !eaten && (
-        <>
-          <Html
-            position={[0, 0.3, 0]} // Чуть выше стейка
-            center                 // Центрируем текст относительно точки
-            distanceFactor={6}     // Уменьшает текст при отдалении камеры
-          >
-            <div style={{
-              color: 'white',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-              background: 'rgba(0,0,0,0.4)',
-              padding: '2px 8px',
-              borderRadius: '10px',
-              fontSize: '32px',
-              fontWeight: 'bold',
-              fontFamily: 'sans-serif',
-              whiteSpace: 'nowrap',
-              pointerEvents: 'none', // Чтобы текст не мешал кликам
-              userSelect: 'none'
-            }}>
-              {item.label}
-            </div>
-          </Html>
-          <Center ref={item.ref} top visible={!eaten}>
-            <primitive
-              object={clone}
-              scale={0.005}
-              position={[0, -0.4, 0]}
-              rotation={[Math.PI / 2, Math.PI, 0]}
-            />
-          </Center>
-        </>
+    <group ref={groupRef} position={item.position}>
+      {/* КОРОБКА */}
+      {!item.eaten && (
+        <primitive ref={item.ref} object={boxClone} scale={0.003} />
       )}
 
+      {/* ЧАСТИЦЫ: РЕАЛЬНО МАЛЕНЬКИЕ */}
+      {item.eaten && opacity > 0 && (
+        <points ref={pointsRef}>
+          <bufferGeometry>
+            <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+          </bufferGeometry>
+          <pointsMaterial 
+            size={0.02} // <-- Регулируй этот параметр для размера точек
+            transparent 
+            opacity={opacity} 
+            color="brown" 
+            sizeAttenuation={true}
+          />
+        </points>
+      )}
 
+      {/* СТЕЙК */}
+      {showSteak && item.right && (
+        <Center top>
+          <primitive 
+            object={steakClone} 
+            scale={0.005} 
+            rotation={[Math.PI / 2, Math.PI, 0]} 
+          />
+        </Center>
+      )}
 
-      <points ref={particlesRef} visible={false}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        </bufferGeometry>
-        <PointMaterial
-          transparent
-          color={item.right?"#00aa00":"#aa0000"}
-          size={0.02}
-          sizeAttenuation={true}
-          depthWrite={false}
-          opacity={1}
-          blending={THREE.NormalBlending}
-        />
-      </points>
+      {/* ТЕКСТ */}
+      {!item.eaten && item.label && (
+        <Html position={[0, 0.4, 0]} center distanceFactor={8}>
+          <div style={{
+            color: 'white',
+            background: 'rgba(0,0,0,0.5)',
+            padding: '4px 12px',
+            borderRadius: '15px',
+            fontSize: '28px',
+            fontWeight: 'bold',
+            pointerEvents: 'none'
+          }}>
+            {item.label}
+          </div>
+        </Html>
+      )}
     </group>
   )
 }
 
 useGLTF.preload('/models/toon_steak.glb')
+useGLTF.preload('/models/wooden_box.glb')
