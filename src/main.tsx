@@ -1,4 +1,4 @@
-import { StrictMode, useState, Suspense } from 'react'
+import { StrictMode, useState, Suspense, useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { Scene } from './components/puzo_shark/Scene'
@@ -8,18 +8,44 @@ import { Loader } from './components/puzo_shark/Loader'
 
 // Типы и данные
 import type { ITest } from './components/puzo_shark/food/tests/interfaces';
-
 import { menuButtonStyle, TestSelectionMenu } from './components/puzo_shark/hud/TestSelectionMenu'
 
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
 
 const App = () => {
-
   const [gameStarted, setGameStarted] = useState(false)
   const [paused, setPaused] = useState(true)
-
-  // Состояния выбора
   const [selectedTest, setSelectedTest] = useState<ITest | null>(null)
+
+  // --- ЛОГИКА АУДИО ---
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Создаем объект аудио один раз при монтировании
+    const audio = new Audio('/music/main.mp3'); // Укажите ваш путь к файлу
+    audio.loop = true;
+    audio.volume = 0.5; // Громкость 50%
+    audioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    // Музыка играет только когда игра запущена И не на паузе
+    if (gameStarted && !paused) {
+      audioRef.current.play().catch(() => {
+        console.log("Автовоспроизведение заблокировано браузером до первого клика");
+      });
+    } else {
+      audioRef.current.pause();
+    }
+  }, [gameStarted, paused]);
+  // ----------------------
 
   const toggleFullscreen = (force?: boolean) => {
     const shouldEnter = force !== undefined ? force : !document.fullscreenElement;
@@ -104,9 +130,6 @@ const overlayStyle: React.CSSProperties = {
   justifyContent: 'center', background: 'rgba(0, 27, 38, 0.96)', color: 'white',
   padding: '20px', textAlign: 'center', backdropFilter: 'blur(5px)'
 };
-
-
-
 
 const pauseIconStyle: React.CSSProperties = {
   position: 'absolute', top: '20px', right: '80px', zIndex: 1000,
