@@ -6,8 +6,8 @@ import type { FoodItem } from "./FoodManager"
 
 export const Steak = (props: { item: FoodItem }) => {
   const { item } = props
-  const { scene: steakScene } = useGLTF('/models/toon_steak.glb')
-  const { scene: boxScene } = useGLTF('/models/wooden_box.glb')
+  const { scene: steakScene } = useGLTF('/models/toon_steak_min.glb')
+  const { scene: boxScene } = useGLTF('/models/wooden_box_min.glb')
   
   const steakClone = useMemo(() => steakScene.clone(), [steakScene])
   const boxClone = useMemo(() => boxScene.clone(), [boxScene])
@@ -113,5 +113,5 @@ export const Steak = (props: { item: FoodItem }) => {
   )
 }
 
-useGLTF.preload('/models/toon_steak.glb')
-useGLTF.preload('/models/wooden_box.glb')
+useGLTF.preload('/models/toon_steak_min.glb')
+useGLTF.preload('/models/wooden_box_min.glb')

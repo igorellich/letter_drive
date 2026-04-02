@@ -7,7 +7,7 @@ import * as THREE from 'three'
 
 export const Shark = (props:{actionRef:RefObject<THREE.AnimationAction>}) => {
  
-  const { scene, animations } = useGLTF('/models/shark.glb')
+  const { scene, animations } = useGLTF('/models/shark_min.glb')
   const { actions, names } = useAnimations(animations, scene)
   
   useEffect(() => {
@@ -44,4 +44,4 @@ export const Shark = (props:{actionRef:RefObject<THREE.AnimationAction>}) => {
   )
 }
 
-useGLTF.preload('/models/shark.glb')
+useGLTF.preload('/models/shark_min.glb')

@@ -20,7 +20,7 @@ const App = () => {
 
   // Используем наш хук. Музыка играет только если игра запущена И не на паузе.
   useAudio({
-    src: '/music/main.mp3',
+    src: '/music/main.ogg',
     paused: !gameStarted || paused,
     autoRepeat: true,
     volume: 0.5
