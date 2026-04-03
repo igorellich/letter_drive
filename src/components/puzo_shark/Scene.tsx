@@ -89,7 +89,7 @@ export const Scene = ({ test, joystickData, onBack, paused }: IGameSceneProps) =
                 {(actionRef: RefObject<THREE.AnimationAction>) => <Shark
                     wrongAnswerHandleRef={wrongAnserHandleRef}
                     actionRef={actionRef}
-                    modelPath='/models/shark.glb'
+                    modelPath='/models/shark_min.glb'
                     rotation={[Math.PI / 2, Math.PI, 0]}
                     scale={0.003}
                 />}
@@ -103,4 +103,4 @@ export const Scene = ({ test, joystickData, onBack, paused }: IGameSceneProps) =
         </>
     )
 }
-useGLTF.preload('/models/shark.glb')
+useGLTF.preload('/models/shark_min.glb')

@@ -1,4 +1,4 @@
-import { StrictMode, useState, Suspense } from 'react'
+import { StrictMode, useState, Suspense} from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { Scene } from './components/puzo_shark/Scene'
@@ -8,18 +8,23 @@ import { Loader } from './components/puzo_shark/Loader'
 
 // Типы и данные
 import type { ITest } from './components/puzo_shark/food/tests/interfaces';
-
 import { menuButtonStyle, TestSelectionMenu } from './components/puzo_shark/hud/TestSelectionMenu'
+import { useAudio } from './components/puzo_shark/hooks/useAudio'
 
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
 
 const App = () => {
-
   const [gameStarted, setGameStarted] = useState(false)
   const [paused, setPaused] = useState(true)
-
-  // Состояния выбора
   const [selectedTest, setSelectedTest] = useState<ITest | null>(null)
+
+  // Используем наш хук. Музыка играет только если игра запущена И не на паузе.
+  useAudio({
+    src: '/music/main.ogg',
+    paused: !gameStarted || paused,
+    autoRepeat: true,
+    volume: 0.5
+  });
 
   const toggleFullscreen = (force?: boolean) => {
     const shouldEnter = false; //force !== undefined ? force : !document.fullscreenElement;
@@ -104,9 +109,6 @@ const overlayStyle: React.CSSProperties = {
   justifyContent: 'center', background: 'rgba(0, 27, 38, 0.96)', color: 'white',
   padding: '20px', textAlign: 'center', backdropFilter: 'blur(5px)', opacity:0.8
 };
-
-
-
 
 const pauseIconStyle: React.CSSProperties = {
   position: 'absolute', top: '20px', right: '80px', zIndex: 1000,

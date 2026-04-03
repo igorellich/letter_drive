@@ -63,9 +63,9 @@ export const useMeshDisintegrate = (
     const positions: THREE.Vector3[] = [];
     for (let i = 0; i < particleCount; i++) {
       const p = new THREE.Vector3();
-      p.x = THREE.MathUtils.lerp(box.min.x, box.max.x, Math.random());
-      p.y = THREE.MathUtils.lerp(box.min.y, box.max.y, Math.random());
-      p.z = THREE.MathUtils.lerp(box.min.z, box.max.z, Math.random());
+      p.x = 0//THREE.MathUtils.lerp(box.min.x, box.max.x, Math.random());
+      p.y = 0//THREE.MathUtils.lerp(box.min.y, box.max.y, Math.random());
+      p.z = 0//THREE.MathUtils.lerp(box.min.z, box.max.z, Math.random());
       positions.push(p);
     }
 
