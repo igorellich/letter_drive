@@ -26,7 +26,7 @@ const App = () => {
     volume: 0.5
   });
 
-  const toggleFullscreen = (force?: boolean) => {
+  const toggleFullscreen = (_?: boolean) => {
     const shouldEnter = false; //force !== undefined ? force : !document.fullscreenElement;
     if (shouldEnter) {
       document.documentElement.requestFullscreen().then(() => {
