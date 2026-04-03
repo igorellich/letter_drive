@@ -11,7 +11,7 @@ import type { FoodItem } from "../food/FoodManager";
     // Отступ справа (в ячейках сетки), чтобы еда не попадала под прогресс-бар
     const RIGHT_MARGIN_CELLS = 2;
 export const useFoodItemsGridSpawner=(controlledMeshRef: RefObject<THREE.Mesh>,
-    question:IQuestion|null
+    question?:IQuestion
 ):[FoodItem[], React.Dispatch<React.SetStateAction<FoodItem[]>> ]=>{
     
     const { viewport } = useThree();

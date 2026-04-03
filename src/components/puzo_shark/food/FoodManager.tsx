@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import * as THREE from 'three'
 
 import { useCollision } from './useCollision'
+import { useFoodItemsGridSpawner } from '../hooks/useFoodItemsGridSpawner'
+import type { IQuestion } from './tests/interfaces'
 
 
 export interface FoodItem {
@@ -10,36 +12,49 @@ export interface FoodItem {
   // Добавляем ref, чтобы коллизии видели реальное положение меша, а не стейт
   ref?: React.RefObject<THREE.Group>
   eaten?: boolean
-  label?: string
-
-  right:boolean
+  label: string
+  right: boolean
 }
 
 interface FoodManagerProps {
-  foodItems: FoodItem[]
+  question?: IQuestion
   sharkRef: React.RefObject<THREE.Mesh>
-  handleEat: (id: string) => void
+  handleEat: (eatenItem: FoodItem) => void
   // Компонент, который будет отрисован для каждой еды
   FoodComponent: React.ComponentType<{ item: FoodItem }>
 }
 
 
-export const FoodManager = ({
-  foodItems,
+export const useFoodManager = ({
   sharkRef,
   handleEat,
-  FoodComponent
+  FoodComponent,
+  question
 }: FoodManagerProps) => {
 
+  const [foodItems, setFoodItems] = useFoodItemsGridSpawner(sharkRef, question)
+  const onEat = useCallback((id: string) => {
+    if (!question) return;
+    const canEat = foodItems.filter(i => i.eaten === true).length === 0
+    if (canEat) {
+      const eatenItem = foodItems.filter(i => i.id === id)[0];
+      if (eatenItem && eatenItem.label) {
+        eatenItem.eaten = true;
+        handleEat(eatenItem);
 
+        setFoodItems(prev => prev.map(item => item.id === id ? { ...item, eaten: true } : item));
+        setTimeout(() => {
+          setFoodItems(prev => prev.map(item => item.id !== id ? { ...item, eaten: true } : item));
+        }, 1000);
+
+      }
+    }
+  }, [foodItems, question, handleEat]);
   // Логика коллизий (использует ref-ы объектов для точности)
-  useCollision(sharkRef, foodItems, handleEat, 0.6)
+  useCollision(sharkRef, foodItems, onEat, 0.6)
 
-  return (
-    <>
-      {foodItems.map(item => (
+  return foodItems.map(item => (
         <FoodComponent key={item.id} item={item} />
-      ))}
-    </>
-  )
+      ))
+  
 }

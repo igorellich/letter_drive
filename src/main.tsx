@@ -22,7 +22,7 @@ const App = () => {
   const [selectedTest, setSelectedTest] = useState<ITest | null>(null)
 
   const toggleFullscreen = (force?: boolean) => {
-    const shouldEnter = force !== undefined ? force : !document.fullscreenElement;
+    const shouldEnter = false; //force !== undefined ? force : !document.fullscreenElement;
     if (shouldEnter) {
       document.documentElement.requestFullscreen().then(() => {
         //@ts-ignore
@@ -81,7 +81,7 @@ const App = () => {
       )}
 
       {/* 3D Сцена */}
-      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+      <Canvas camera={{ position: [0, 0, 5], fov: 45 }} frameloop={paused?"never":"always"}>
         {gameStarted && <Suspense fallback={<Loader />}>
           {selectedTest && (
             <Scene
@@ -102,7 +102,7 @@ const overlayStyle: React.CSSProperties = {
   position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
   zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center',
   justifyContent: 'center', background: 'rgba(0, 27, 38, 0.96)', color: 'white',
-  padding: '20px', textAlign: 'center', backdropFilter: 'blur(5px)'
+  padding: '20px', textAlign: 'center', backdropFilter: 'blur(5px)', opacity:0.8
 };
 
 
