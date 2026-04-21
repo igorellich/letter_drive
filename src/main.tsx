@@ -35,8 +35,8 @@ const App = () => {
     document.addEventListener('visibilitychange', onVisibilityChange)
     return ()=>document.removeEventListener('visibilitychange', onVisibilityChange);
   },[])
-  const toggleFullscreen = (_?: boolean) => {
-    const shouldEnter = true; //force !== undefined ? force : !document.fullscreenElement;
+  const toggleFullscreen = (force?: boolean) => {
+    const shouldEnter = force !== undefined ? force : !document.fullscreenElement;
     if (shouldEnter) {
       //document.documentElement.requestFullscreen().then(() => {
         //@ts-ignore
