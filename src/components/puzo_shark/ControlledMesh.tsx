@@ -1,5 +1,5 @@
 import { useMemo, useRef, type ReactElement, type RefObject } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import type { JoystickData } from './Joystick'
 import { TopDownBubbleTrail } from './BubbleTrail'
@@ -15,10 +15,10 @@ export const ControlledMesh = (props: {
   sceneHeight: number
 }) => {
   const { joystickData, meshRef,sceneHeight, sceneWidth } = props;
-  const { viewport } = useThree()
+  
   
   const pathRef = useRef<THREE.Vector3[]>([]);
-  const isDrawing = useRef(false);
+  //const isDrawing = useRef(false);
   const isMovingRef = useRef<boolean>(false);
   
   const targetPos = useMemo(() => new THREE.Vector3(0, 0, -0.5), [])
@@ -43,18 +43,18 @@ export const ControlledMesh = (props: {
     posAttr.needsUpdate = true;
   };
 
-  const handlePointer = (e: any) => {
-    if (!isDrawing.current) return;
-    const path = pathRef.current;
-    const lastPoint = path[path.length - 1];
-    // Увеличили порог записи, чтобы линия была чище
-    if (path.length < MAX_POINTS && (!lastPoint || lastPoint.distanceTo(e.point) > 0.5)) {
-      const p = e.point.clone();
-      p.z = -0.5;
-      path.push(p);
-      updateLineVisual();
-    }
-  };
+  // const handlePointer = (e: any) => {
+  //   if (!isDrawing.current) return;
+  //   const path = pathRef.current;
+  //   const lastPoint = path[path.length - 1];
+  //   // Увеличили порог записи, чтобы линия была чище
+  //   if (path.length < MAX_POINTS && (!lastPoint || lastPoint.distanceTo(e.point) > 0.5)) {
+  //     const p = e.point.clone();
+  //     p.z = -0.5;
+  //     path.push(p);
+  //     updateLineVisual();
+  //   }
+  // };
 
   useFrame((_, delta) => {
     const mesh = meshRef.current;
