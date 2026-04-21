@@ -15,7 +15,7 @@ export const Joystick = (props: {joystickData:JoystickData}) => {
     const manager = nipplejs.create({
       zone: containerRef.current,
       mode: 'static',
-      position: { left: '80px', bottom: '80px' },
+      position: { left: '100px', bottom: '80px' },
       color: 'white',
       size: 120
     })
