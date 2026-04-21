@@ -38,14 +38,14 @@ const App = () => {
   const toggleFullscreen = (force?: boolean) => {
     const shouldEnter = force !== undefined ? force : !document.fullscreenElement;
     if (shouldEnter) {
-      //document.documentElement.requestFullscreen().then(() => {
+      document.documentElement.requestFullscreen().then(() => {
         //@ts-ignore
         if (screen.orientation?.lock) screen.orientation.lock('landscape').catch(() => { });
-      //}).catch((e) => console.error(e));
+      }).catch((e) => console.error(e));
     } 
-    // else if (document.exitFullscreen) {
-    //   document.exitFullscreen();
-    // }
+    else if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
   }
 
   const startGame = (test: ITest) => {
