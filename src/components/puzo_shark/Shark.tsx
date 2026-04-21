@@ -8,7 +8,7 @@ import { useMeshDisintegrate } from './hooks/useMeshDisintegrate'
 
 export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wrongAnswerHandleRef:RefObject<()=>void>, modelPath: string, scale: number, rotation:number[] }) => {
   const {modelPath, rotation, scale} = props;
-  const { scene, animations } = useGLTF(modelPath);
+  const { scene, animations } = useGLTF(modelPath, '/draco/');
   const { actions, names } = useAnimations(animations, scene)
   const [exploded, setExploded] = useState<boolean>(false);
   const explodedRef =  useMeshDisintegrate(scene, { delayBeforeExplosion: 500, enabled: exploded });

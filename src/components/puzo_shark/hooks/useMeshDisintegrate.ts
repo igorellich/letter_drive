@@ -30,7 +30,7 @@ export const useMeshDisintegrate = (
     decay = 0.995,
     enabled = false
   } = options;
-
+  const colorArray = new Float32Array(particleCount*3);
   const meshRef = useRef<THREE.InstancedMesh | null>(null);
   const dummyRef = useRef(new THREE.Object3D());
   const [_, setCurrMesh] = useState<THREE.InstancedMesh | null>(null)
@@ -79,15 +79,18 @@ export const useMeshDisintegrate = (
     particleDataRef.current = data;
 
     const geometry = new THREE.BoxGeometry(particleSize, particleSize, particleSize);
-    const material = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
+    const material = new THREE.MeshStandardMaterial({ vertexColors:true, roughness: 0.6 });
     const mesh = new THREE.InstancedMesh(geometry, material, particleCount);
-
+    const tempColor = new THREE.Color();
     data.forEach((d, i) => {
+      tempColor.set(Math.random()*0xffffff);
+      tempColor.toArray(colorArray,i*3);
       dummyRef.current.position.copy(d.position);
       dummyRef.current.rotation.set(0, 0, 0);
       dummyRef.current.updateMatrix();
       mesh.setMatrixAt(i, dummyRef.current.matrix);
     });
+    geometry.setAttribute('color', new THREE.InstancedBufferAttribute(colorArray,3));
 
     mesh.instanceMatrix.needsUpdate = true;
     setTimeout(()=>{

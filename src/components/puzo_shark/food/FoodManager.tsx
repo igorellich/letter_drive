@@ -21,7 +21,9 @@ interface FoodManagerProps {
   sharkRef: React.RefObject<THREE.Mesh>
   handleEat: (eatenItem: FoodItem) => void
   // Компонент, который будет отрисован для каждой еды
-  FoodComponent: React.ComponentType<{ item: FoodItem }>
+  FoodComponent: React.ComponentType<{ item: FoodItem }>,
+  sceneWidth: number,
+  sceneHeight: number
 }
 
 
@@ -29,10 +31,12 @@ export const useFoodManager = ({
   sharkRef,
   handleEat,
   FoodComponent,
-  question
+  question,
+  sceneWidth,
+  sceneHeight
 }: FoodManagerProps) => {
 
-  const [foodItems, setFoodItems] = useFoodItemsGridSpawner(sharkRef, question)
+  const [foodItems, setFoodItems] = useFoodItemsGridSpawner(sharkRef, sceneWidth, sceneHeight, question)
   const onEat = useCallback((id: string) => {
     if (!question) return;
     const canEat = foodItems.filter(i => i.eaten === true).length === 0

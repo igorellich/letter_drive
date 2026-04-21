@@ -1,18 +1,18 @@
 import * as THREE from 'three'
-import { useThree, useFrame } from "@react-three/fiber"
+import { useFrame } from "@react-three/fiber"
 import { useRef, useMemo } from "react"
 import { WaterMaterial } from "./WaterMaterial"
 
-export const WaterLayer = ({ position, speed, opacity, zoom }: any) => {
+export const WaterLayer = (props:{ position: [x: number, y: number, z: number], speed:number, opacity:number, zoom:number, width:number, height:number }) => {
   const mesh = useRef<THREE.Mesh>(null!)
-  const { viewport } = useThree()
+  const {height,opacity,position,speed,width,zoom} = props;
 
   // Клонируем униформы, чтобы слои были независимы
   const layerUniforms = useMemo(() => ({
     uTime: { value: 0 },
     uDepthColor: { value: new THREE.Color('#007da1') },
     uSurfaceColor: { value: new THREE.Color('#7df9ff') },
-    uScale: { value: zoom },
+    uScale: { value: (width+height)/2 },
     uOpacity: { value: opacity }
   }), [zoom, opacity])
 
@@ -21,8 +21,8 @@ export const WaterLayer = ({ position, speed, opacity, zoom }: any) => {
   })
 
   return (
-    <mesh ref={mesh} position={position} scale={[viewport.width * 1.5, viewport.height * 1.5, 1]}>
-      <planeGeometry args={[1, 1]} />
+    <mesh ref={mesh} position={position} scale={[1, 1, 1]}>
+      <planeGeometry args={[width,height]} />
       <shaderMaterial
         vertexShader={WaterMaterial.vertexShader}
         fragmentShader={WaterMaterial.fragmentShader}

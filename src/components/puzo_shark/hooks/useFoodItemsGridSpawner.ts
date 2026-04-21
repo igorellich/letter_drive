@@ -11,14 +11,17 @@ import type { FoodItem } from "../food/FoodManager";
     // Отступ справа (в ячейках сетки), чтобы еда не попадала под прогресс-бар
     const RIGHT_MARGIN_CELLS = 2;
 export const useFoodItemsGridSpawner=(controlledMeshRef: RefObject<THREE.Mesh>,
+      sceneWidth: number,
+    sceneHeight: number,
     question?:IQuestion
+  
 ):[FoodItem[], React.Dispatch<React.SetStateAction<FoodItem[]>> ]=>{
     
     const { viewport } = useThree();
         const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
     const generateGridPositions = useCallback((count: number): THREE.Vector3[] => {
-            const cellW = viewport.width / GRID_X;
-            const cellH = viewport.height / GRID_Y;
+            const cellW = sceneWidth / GRID_X;
+            const cellH = sceneHeight / GRID_Y;
             const occupiedCells: THREE.Vector2[] = [];
             const positions: THREE.Vector3[] = [];
     

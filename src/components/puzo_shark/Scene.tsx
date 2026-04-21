@@ -1,4 +1,4 @@
-import { Html, Stats, useGLTF } from "@react-three/drei"
+import { Html, PerspectiveCamera, Stats, useGLTF } from "@react-three/drei"
 import { ControlledMesh } from "./ControlledMesh"
 import { WaterPlane } from "./waterPlane/WaterPlane"
 import { useCallback, useEffect, useRef, useState, type RefObject, useMemo } from "react"
@@ -8,22 +8,25 @@ import { type FoodItem, useFoodManager } from "./food/FoodManager"
 import { Steak } from "./food/Steak"
 import type { ITest } from "./food/tests/interfaces"
 
-import type { JoystickData } from "./Joystick"
+import { Joystick, type JoystickData } from "./Joystick"
 import { ProgressScale, type AnswerResult } from "./hud/ProgressScale"
 import { TestEndScreen } from "./hud/TestEndScreen"
 import { QuestionLabel } from "./hud/QuestionLabel"
+import { useFollowingCamera } from "./hooks/useFollowingCamera"
 
 interface IGameSceneProps {
     test: ITest,
     joystickData: JoystickData,
     paused?: boolean,
-    onBack: () => void
+    onBack: () => void,
+    width: number,
+    height: number
 }
 
-export const Scene = ({ test, joystickData, onBack, paused }: IGameSceneProps) => {
+export const Scene = ({ test, joystickData, onBack, paused, height, width}: IGameSceneProps) => {
     const sharkRef = useRef<THREE.Mesh>(null!);
     const wrongAnserHandleRef = useRef(() => null)
-
+    useFollowingCamera({ targetRef: sharkRef })
     const [sessionIndexes, setSessionIndexes] = useState<number[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [results, setResults] = useState<AnswerResult[]>(new Array(10).fill('pending'));
@@ -65,15 +68,18 @@ export const Scene = ({ test, joystickData, onBack, paused }: IGameSceneProps) =
         question: currentQuestion,
         sharkRef: sharkRef,
         handleEat: handleEat,
-        FoodComponent: Steak
+        FoodComponent: Steak,
+        sceneHeight:height,
+        sceneWidth:width
     })
     return (
         <>
             {import.meta.env.DEV && <Stats />}
             <ambientLight intensity={2} />
-
-            {!paused && <Html fullscreen style={{ pointerEvents: 'none' }}>
-                <div style={{ position: 'relative', width: '100%', height: '100%', fontFamily: 'sans-serif' }}>
+            <PerspectiveCamera makeDefault position={[0, 0, 5]}>
+                <Html fullscreen style={{ pointerEvents: 'none', position:'absolute', top:0, left:0}}>
+                <Joystick joystickData={joystickData}  />
+                 {!paused && <div style={{ position: 'absolute', width: '100%', height: '100%', fontFamily: 'sans-serif' }}>
 
                     {/* Текст вопроса сверху */}
                     {currentQuestion && <QuestionLabel label={currentQuestion.question} />}
@@ -82,10 +88,13 @@ export const Scene = ({ test, joystickData, onBack, paused }: IGameSceneProps) =
 
                     {/* ЭКРАН ЗАВЕРШЕНИЯ */}
                     {isFinished && <TestEndScreen onBack={onBack} results={results} />}
-                </div>
-            </Html>}
+                </div>}
+              
+            </Html>
+            </PerspectiveCamera>
+          
 
-            <ControlledMesh baseSpeed={3} meshRef={sharkRef} joystickData={joystickData}>
+            <ControlledMesh baseSpeed={3} meshRef={sharkRef} joystickData={joystickData} sceneHeight={height} sceneWidth={width}>
                 {(actionRef: RefObject<THREE.AnimationAction>) => <Shark
                     wrongAnswerHandleRef={wrongAnserHandleRef}
                     actionRef={actionRef}
@@ -99,8 +108,8 @@ export const Scene = ({ test, joystickData, onBack, paused }: IGameSceneProps) =
                 <>{foodComponents}</>
             )}
 
-            <WaterPlane />
+            <WaterPlane height={height} width={width} />
         </>
     )
 }
-useGLTF.preload('/models/shark_min.glb')
+useGLTF.preload('/models/shark_min.glb', '/draco/')

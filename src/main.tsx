@@ -1,4 +1,4 @@
-import { StrictMode, useState, Suspense} from 'react'
+import { StrictMode, useState, Suspense, useEffect} from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { Scene } from './components/puzo_shark/Scene'
@@ -25,17 +25,27 @@ const App = () => {
     autoRepeat: true,
     volume: 0.5
   });
-
-  const toggleFullscreen = (force?: boolean) => {
-    const shouldEnter = false; //force !== undefined ? force : !document.fullscreenElement;
+  useEffect(()=>{
+    const onVisibilityChange = ()=>{
+      if(document.hidden){
+        setPaused(true);
+      }
+        
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return ()=>document.removeEventListener('visibilitychange', onVisibilityChange);
+  },[])
+  const toggleFullscreen = (_?: boolean) => {
+    const shouldEnter = true; //force !== undefined ? force : !document.fullscreenElement;
     if (shouldEnter) {
-      document.documentElement.requestFullscreen().then(() => {
+      //document.documentElement.requestFullscreen().then(() => {
         //@ts-ignore
         if (screen.orientation?.lock) screen.orientation.lock('landscape').catch(() => { });
-      }).catch((e) => console.error(e));
-    } else if (document.exitFullscreen) {
-      document.exitFullscreen();
-    }
+      //}).catch((e) => console.error(e));
+    } 
+    // else if (document.exitFullscreen) {
+    //   document.exitFullscreen();
+    // }
   }
 
   const startGame = (test: ITest) => {
@@ -94,6 +104,8 @@ const App = () => {
               paused={paused}
               joystickData={joystickData}
               test={selectedTest}
+              height={20}
+              width={20}
             />
           )}
         </Suspense>}

@@ -36,5 +36,5 @@ export const Joystick = (props: {joystickData:JoystickData}) => {
     return () => manager.destroy()
   }, [])
 
-  return <div ref={containerRef} style={{ overflow:'hidden', position: 'absolute', bottom: 0, left: 0, width: '200px', height: '200px', zIndex: 1000 }} />
+  return <div ref={containerRef} style={{ pointerEvents:'auto', overflow:'hidden', position: 'absolute', bottom: 0, right: 0, width: '200px', height: '200px', zIndex: 1000 }} />
 }

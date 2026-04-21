@@ -10,9 +10,11 @@ export const ControlledMesh = (props: {
   baseSpeed: number,
   children: (actionRef: RefObject<THREE.AnimationAction>) => ReactElement,
   meshRef: RefObject<THREE.Mesh>,
-  joystickData: JoystickData
+  joystickData: JoystickData,
+  sceneWidth: number,
+  sceneHeight: number
 }) => {
-  const { joystickData, meshRef } = props;
+  const { joystickData, meshRef,sceneHeight, sceneWidth } = props;
   const { viewport } = useThree()
   
   const pathRef = useRef<THREE.Vector3[]>([]);
@@ -109,8 +111,10 @@ export const ControlledMesh = (props: {
     mesh.quaternion.slerp(targetQuaternion, 0.4);
 
     const margin = 0.5;
-    mesh.position.x = THREE.MathUtils.clamp(mesh.position.x, -viewport.width / 2 + margin, viewport.width / 2 - margin);
-    mesh.position.y = THREE.MathUtils.clamp(mesh.position.y, -viewport.height / 2 + margin, viewport.height / 2 - margin);
+    //  mesh.position.x = THREE.MathUtils.clamp(mesh.position.x, -viewport.width / 2 + margin, viewport.width / 2 - margin);
+    //  mesh.position.y = THREE.MathUtils.clamp(mesh.position.y, -viewport.height / 2 + margin, viewport.height / 2 - margin);
+    mesh.position.x = THREE.MathUtils.clamp(mesh.position.x, -sceneWidth / 2 + margin, sceneWidth / 2 - margin);
+     mesh.position.y = THREE.MathUtils.clamp(mesh.position.y, -sceneHeight / 2 + margin, sceneHeight / 2 - margin);
     
     if (joystickData.active || path.length === 0) {
        targetPos.copy(mesh.position);
@@ -126,15 +130,15 @@ export const ControlledMesh = (props: {
     <group>
       <mesh 
         visible={false} 
-        onPointerDown={(e) => { 
-          isDrawing.current = true; 
-          pathRef.current = [meshRef.current?.position.clone() || e.point.clone()];
-          updateLineVisual();
-        }}
-        onPointerMove={handlePointer}
-        onPointerUp={() => isDrawing.current = false}
+        // onPointerDown={(e) => { 
+        //   isDrawing.current = true; 
+        //   pathRef.current = [meshRef.current?.position.clone() || e.point.clone()];
+        //   updateLineVisual();
+        // }}
+        // onPointerMove={handlePointer}
+        // onPointerUp={() => isDrawing.current = false}
       >
-        <planeGeometry args={[viewport.width * 2, viewport.height * 2]} />
+        <planeGeometry args={[sceneWidth * 2, sceneHeight * 2]} />
       </mesh>
 
       <line>
