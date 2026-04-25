@@ -12,53 +12,58 @@ export interface FoodItem {
   // Добавляем ref, чтобы коллизии видели реальное положение меша, а не стейт
   ref?: React.RefObject<THREE.Group>
   eaten?: boolean
-  label: string
-  right: boolean
+  label: string,
+  right?:boolean,
+  question:IQuestion
 }
 
 interface FoodManagerProps {
-  question?: IQuestion
-  sharkRef: React.RefObject<THREE.Mesh>
-  handleEat: (eatenItem: FoodItem) => void
+  questions?: IQuestion[]
+  sharkRef: React.RefObject<THREE.Mesh>  
   // Компонент, который будет отрисован для каждой еды
-  FoodComponent: React.ComponentType<{ item: FoodItem }>,
+  FoodComponent: React.ComponentType<{ item: FoodItem, onSelectAnswer:(item: FoodItem)=>void }>,
   sceneWidth: number,
-  sceneHeight: number
+  sceneHeight: number,
+  eatenItem?:FoodItem,
+  onSelectAnswer:(item:FoodItem)=>void,
+  sessionIndexes:number[]
 }
 
 
 export const useFoodManager = ({
   sharkRef,
-  handleEat,
+  
   FoodComponent,
-  question,
+  questions,
   sceneWidth,
-  sceneHeight
+  sceneHeight,
+  onSelectAnswer,
+  sessionIndexes
 }: FoodManagerProps) => {
 
-  const [foodItems, setFoodItems] = useFoodItemsGridSpawner(sharkRef, sceneWidth, sceneHeight, question)
+  const [foodItems, setFoodItems] = useFoodItemsGridSpawner(sharkRef, sceneWidth, sceneHeight, questions)
   const onEat = useCallback((id: string) => {
-    if (!question) return;
+    if (!questions) return;
     const canEat = foodItems.filter(i => i.eaten === true).length === 0
     if (canEat) {
       const eatenItem = foodItems.filter(i => i.id === id)[0];
       if (eatenItem && eatenItem.label) {
-        eatenItem.eaten = true;
-        handleEat(eatenItem);
-
-        setFoodItems(prev => prev.map(item => item.id === id ? { ...item, eaten: true } : item));
-        setTimeout(() => {
-          setFoodItems(prev => prev.map(item => item.id !== id ? { ...item, eaten: true } : item));
-        }, 1000);
+        eatenItem.eaten = true;        
 
       }
     }
-  }, [foodItems, question, handleEat]);
+  }, [foodItems, sessionIndexes]);
+ 
   // Логика коллизий (использует ref-ы объектов для точности)
   useCollision(sharkRef, foodItems, onEat, 0.6)
-
+  const onSelectAnswerHandler = (item: FoodItem) => {
+    onSelectAnswer(item);
+    setTimeout(() => {
+      setFoodItems(prev => prev.filter(i => i.id !== item.id));
+    }, 2500)
+  }
   return foodItems.map(item => (
-        <FoodComponent key={item.id} item={item} />
+        <FoodComponent key={item.id} onSelectAnswer={onSelectAnswerHandler} item={item} />
       ))
   
 }

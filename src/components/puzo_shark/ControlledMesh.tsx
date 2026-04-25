@@ -57,6 +57,11 @@ export const ControlledMesh = (props: {
   // };
 
   useFrame((_, delta) => {
+    if (delta > 2) {
+      joystickData.active = false;
+      joystickData.x = 0;
+      joystickData.y = 0;
+    }
     const mesh = meshRef.current;
     const path = pathRef.current;
     if (!mesh) return;
@@ -91,12 +96,13 @@ export const ControlledMesh = (props: {
         updateLineVisual();
       }
     } 
-    else if (joystickData.active) {
+    else if (joystickData.active ) {
       if (path.length > 0) {
         pathRef.current = [];
         updateLineVisual();
       }
       const joySpeed = 10 * delta;
+      
       targetPos.x += joystickData.x * joySpeed;
       targetPos.y += joystickData.y * joySpeed;
       

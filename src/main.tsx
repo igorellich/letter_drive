@@ -1,4 +1,4 @@
-import { StrictMode, useState, Suspense, useEffect} from 'react'
+import { StrictMode, useState, Suspense, useEffect, createContext} from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { Scene } from './components/puzo_shark/Scene'
@@ -12,12 +12,13 @@ import { menuButtonStyle, TestSelectionMenu } from './components/puzo_shark/hud/
 import { useAudio } from './components/puzo_shark/hooks/useAudio'
 
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
-
+export const FreezeContext = createContext<(freeze:boolean)=>void>((_)=>true);
 const App = () => {
   const [gameStarted, setGameStarted] = useState(false)
   const [paused, setPaused] = useState(true)
   const [selectedTest, setSelectedTest] = useState<ITest | null>(null)
-
+  const [freeze, setFreeze] = useState<boolean>(false);
+  
   // Используем наш хук. Музыка играет только если игра запущена И не на паузе.
   useAudio({
     src: '/music/main.ogg',
@@ -47,6 +48,10 @@ const App = () => {
       document.exitFullscreen();
     }
   }
+
+  useEffect(()=>{
+    setFreeze(paused);
+  },[paused])
 
   const startGame = (test: ITest) => {
     setSelectedTest(test);
@@ -87,29 +92,30 @@ const App = () => {
       )}
 
       {/* Кнопка паузы (HUD) */}
-      {gameStarted && !paused && (
+      {gameStarted && !freeze && (
         <button onClick={() => setPaused(true)} style={pauseIconStyle}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />
           </svg>
         </button>
       )}
-
+      <FreezeContext.Provider value={setFreeze}>
       {/* 3D Сцена */}
-      <Canvas camera={{ position: [0, 0, 5], fov: 45 }} frameloop={paused?"never":"always"}>
+      <Canvas camera={{ position: [0, 0, 5], fov: 45 }} frameloop={freeze?"never":"always"}>
         {gameStarted && <Suspense fallback={<Loader />}>
           {selectedTest && (
             <Scene
               onBack={exitToMenu}
-              paused={paused}
+              freeze={freeze}
               joystickData={joystickData}
               test={selectedTest}
-              height={10}
-              width={10}
+              height={15}
+              width={15}
             />
           )}
         </Suspense>}
       </Canvas>
+      </FreezeContext.Provider>
     </div>
   )
 }
@@ -119,7 +125,7 @@ const overlayStyle: React.CSSProperties = {
   position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
   zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center',
   justifyContent: 'center', background: 'rgba(0, 27, 38, 0.96)', color: 'white',
-  padding: '20px', textAlign: 'center', backdropFilter: 'blur(5px)', opacity:0.8
+  textAlign: 'center', backdropFilter: 'blur(5px)', opacity:0.8
 };
 
 const pauseIconStyle: React.CSSProperties = {

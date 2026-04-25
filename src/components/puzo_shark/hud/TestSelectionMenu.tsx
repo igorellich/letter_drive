@@ -7,7 +7,7 @@ export const menuButtonStyle = {
   fontWeight: 'bold' as const, transition: 'transform 0.2s',
   boxShadow: '0 4px 15px rgba(0,210,255,0.3)'
 };
-const testButtonStyle = {
+export const testButtonStyle = {
   ...menuButtonStyle,
   background: 'white', color: '#001b26', width: '100%', fontSize: '16px', marginBottom: '8px'
 };
@@ -25,7 +25,7 @@ export const TestSelectionMenu = (props: { startGame: (test: ITest) => void }) =
   return <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
     <h1 style={{ color: '#00d2ff', margin: 0, fontSize: '3rem', textShadow: '0 0 20px rgba(0,210,255,0.5)' }}>Дай стейк!</h1>
     {!currentGrade && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', overflow:'auto', flexShrink:1 }}>
         <p style={{ fontSize: '1.2rem' }}>Выберите класс:</p>
         {[TwoGrade].map(g => (
           <button key={g.title} onClick={() => setCurrentGrade(g)} style={menuButtonStyle}>{g.title}</button>
@@ -33,10 +33,10 @@ export const TestSelectionMenu = (props: { startGame: (test: ITest) => void }) =
       </div>
     )}
     {currentGrade && !currentSubject && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', overflow:'auto', flexShrink:1 }}>
         <button onClick={() => setCurrentGrade(null)} style={backButtonStyle}>← К выбору класса</button>
         <h3 style={{ margin: 0 }}>{currentGrade.title}</h3>
-        <p style={{ fontSize: '1.2rem' }}>Выберите предмет:</p>
+        <p style={{ fontSize: '1.2rem', margin:'5px' }}>Выберите предмет:</p>
         {currentGrade.subjects.map(g => (
           <button key={g.title} onClick={() => setCurrentSubject(g)} style={menuButtonStyle}>{g.title}</button>
         ))}
