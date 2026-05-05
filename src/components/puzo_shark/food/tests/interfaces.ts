@@ -16,3 +16,8 @@ export interface IGrade {
     title: string,
     subjects: ISubject[]
 }
+
+export interface IAppState{
+    diversTimeLeftSec:number,
+    diversEaten: number
+}

@@ -1,7 +1,7 @@
-import { Html, PerspectiveCamera, Stats, useGLTF } from "@react-three/drei"
+import { Html, PerspectiveCamera, PositionalAudio, Stats, useGLTF } from "@react-three/drei"
 import { ControlledMesh } from "./ControlledMesh"
 import { WaterPlane } from "./waterPlane/WaterPlane"
-import { useCallback, useEffect, useRef, useState, type RefObject, useMemo } from "react"
+import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react"
 import * as THREE from 'three'
 import { Shark } from "./Shark"
 import { type FoodItem, useFoodManager } from "./food/FoodManager"
@@ -11,36 +11,42 @@ import type { ITest } from "./food/tests/interfaces"
 import { Joystick, type JoystickData } from "./Joystick"
 import { ProgressScale, type AnswerResult } from "./hud/ProgressScale"
 import { TestEndScreen } from "./hud/TestEndScreen"
-import { QuestionLabel } from "./hud/QuestionLabel"
+
 import { useFollowingCamera } from "./hooks/useFollowingCamera"
+import { AppStateController } from "./food/AppStateController"
 
 interface IGameSceneProps {
     test: ITest,
     joystickData: JoystickData,
-    paused?: boolean,
     onBack: () => void,
     width: number,
-    height: number
+    height: number,
+    freeze: boolean
 }
 
-export const Scene = ({ test, joystickData, onBack, paused, height, width}: IGameSceneProps) => {
+export const Scene = ({ test, joystickData, onBack, freeze, height, width }: IGameSceneProps) => {
     const sharkRef = useRef<THREE.Mesh>(null!);
     const wrongAnserHandleRef = useRef(() => null)
     useFollowingCamera({ targetRef: sharkRef })
     const [sessionIndexes, setSessionIndexes] = useState<number[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [results, setResults] = useState<AnswerResult[]>(new Array(10).fill('pending'));
-
-    const currentQuestion = useMemo(() => {
-        if (sessionIndexes.length > 0 && currentIndex < sessionIndexes.length) {
-            return test.questions[sessionIndexes[currentIndex]];
+    const eatSoundRef = useRef<THREE.PositionalAudio | null>(null);
+    const [finished, setFinished] = useState<boolean>(false)
+    
+    useEffect(()=>{
+        setFinished(sessionIndexes.length > 0 && currentIndex >= sessionIndexes.length);
+    },[sessionIndexes, currentIndex])
+    useEffect(() => {
+        if (finished) {
+            const rightAnswersNum = results.filter(r => r === 'correct').length;
+            if (rightAnswersNum > 7) {
+                const appState = AppStateController.getState();
+                appState.diversTimeLeftSec += rightAnswersNum == 10 ? 120 : 60;
+                AppStateController.setState(appState);
+            }
         }
-        return undefined;
-    }, [currentIndex, sessionIndexes, test.questions]);
-
-
-
-
+    }, [finished])
     useEffect(() => {
         if (test.questions.length === 0) return;
         const allIndexes = test.questions.map((_, i) => i);
@@ -48,51 +54,55 @@ export const Scene = ({ test, joystickData, onBack, paused, height, width}: IGam
         setSessionIndexes(shuffled.slice(0, 10));
     }, [test]);
 
-    const handleEat = useCallback((eatenItem: FoodItem) => {
-        const isCorrect = currentQuestion?.answer.includes(eatenItem.label);
-        if (!isCorrect) {
-            wrongAnserHandleRef.current();
-        }
-        setResults(prev => {
-            const newResults = [...prev];
-            newResults[currentIndex] = isCorrect ? 'correct' : 'wrong';
-            return newResults;
-        });
-        setTimeout(() => {
-            setCurrentIndex(prev => prev + 1);
-        }, 3000);
-    }, [currentQuestion, currentIndex]);
 
-    const isFinished = sessionIndexes.length > 0 && currentIndex >= sessionIndexes.length;
+
+    const onSelectAnswer = (item: FoodItem) => {
+        if (item) {
+            if (item.right === false && wrongAnserHandleRef.current) {
+                wrongAnserHandleRef.current();
+            }
+            setResults(prev => {
+                const newResults = [...prev];
+                newResults[currentIndex] = item.right ? 'correct' : 'wrong';
+                return newResults;
+            });
+            setTimeout(() => {
+                setCurrentIndex(prev => prev + 1);
+            }, 3000);
+        }
+    }
+
+    
+    const selectedQuestions = useMemo(() => test.questions.filter((_, i) => sessionIndexes.includes(i)), [test, sessionIndexes]);
     const foodComponents = useFoodManager({
-        question: currentQuestion,
+        questions: selectedQuestions,
         sharkRef: sharkRef,
-        handleEat: handleEat,
         FoodComponent: Steak,
-        sceneHeight:height,
-        sceneWidth:width
+        sceneHeight: height,
+        sceneWidth: width,
+        onSelectAnswer
     })
     return (
         <>
             {import.meta.env.DEV && <Stats />}
             <ambientLight intensity={2} />
             <PerspectiveCamera makeDefault position={[0, 0, 5]}>
-                <Html fullscreen style={{ pointerEvents: 'none', position:'absolute', top:0, left:0}}>
-                <Joystick joystickData={joystickData}  />
-                 {!paused && <div style={{ position: 'absolute', width: '100%', height: '100%', fontFamily: 'sans-serif' }}>
+                <Html fullscreen style={{ pointerEvents: 'none', position: 'absolute', top: 0, left: 0 }}>
 
-                    {/* Текст вопроса сверху */}
-                    {currentQuestion && <QuestionLabel label={currentQuestion.question} />}
+                    {!freeze && <>
+                        <Joystick joystickData={joystickData} />
+                        <div style={{ position: 'absolute', width: '100%', height: '100%', fontFamily: 'sans-serif' }}>
 
-                    <ProgressScale currentIndex={currentIndex} results={results} />
 
-                    {/* ЭКРАН ЗАВЕРШЕНИЯ */}
-                    {isFinished && <TestEndScreen onBack={onBack} results={results} />}
-                </div>}
-              
-            </Html>
+                            <ProgressScale currentIndex={currentIndex} results={results} />
+
+                            {/* ЭКРАН ЗАВЕРШЕНИЯ */}
+                            {finished && <TestEndScreen onBack={onBack} results={results} />}
+                        </div></>}
+
+                </Html>
             </PerspectiveCamera>
-          
+
 
             <ControlledMesh baseSpeed={3} meshRef={sharkRef} joystickData={joystickData} sceneHeight={height} sceneWidth={width}>
                 {(actionRef: RefObject<THREE.AnimationAction>) => <Shark
@@ -104,10 +114,12 @@ export const Scene = ({ test, joystickData, onBack, paused, height, width}: IGam
                 />}
             </ControlledMesh>
 
-            {currentQuestion && !paused && (
+            {(
                 <>{foodComponents}</>
             )}
-
+            <Suspense>
+                <PositionalAudio ref={eatSoundRef} url="/music/crunch.ogg" distance={50} loop={false} />
+            </Suspense>
             <WaterPlane height={height} width={width} />
         </>
     )

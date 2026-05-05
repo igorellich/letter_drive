@@ -1,19 +1,23 @@
-import { useGLTF, useAnimations } from '@react-three/drei'
-import { useEffect, type RefObject, useState } from 'react'
+import { useGLTF, useAnimations, PositionalAudio } from '@react-three/drei'
+import { useEffect, type RefObject, useState, Suspense, useRef } from 'react'
 
 import * as THREE from 'three'
 import { useMeshDisintegrate } from './hooks/useMeshDisintegrate'
 
 
 
-export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wrongAnswerHandleRef:RefObject<()=>void>, modelPath: string, scale: number, rotation:number[] }) => {
-  const {modelPath, rotation, scale} = props;
+export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wrongAnswerHandleRef?: RefObject<() => void>, modelPath: string, scale: number, rotation: number[] }) => {
+  const { modelPath, rotation, scale } = props;
   const { scene, animations } = useGLTF(modelPath, '/draco/');
   const { actions, names } = useAnimations(animations, scene)
   const [exploded, setExploded] = useState<boolean>(false);
-  const explodedRef =  useMeshDisintegrate(scene, { delayBeforeExplosion: 500, enabled: exploded });
+  const explodedRef = useMeshDisintegrate(scene, { delayBeforeExplosion: 500, enabled: exploded });
+
+  const explodeSoundRef = useRef<THREE.PositionalAudio | null>(null);
   useEffect(() => {
-    props.wrongAnswerHandleRef.current = ()=>setExploded(true);
+    if (props.wrongAnswerHandleRef) {
+      props.wrongAnswerHandleRef.current = () => setExploded(true);
+    }
     if (names.length > 0) {
       props.actionRef.current = actions[names[0]] as THREE.AnimationAction;
       // Запускаем основную анимацию (обычно плавание)
@@ -28,14 +32,17 @@ export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wron
       }
     })
   }, [actions, names, scene])
- 
+
   useEffect(() => {
-    if (exploded) {      
+    if (exploded) {
       setTimeout(() => {
         setExploded(false);
-      },2500)
-    }else{
-      explodedRef.current=null;
+      }, 2500)
+      if (explodeSoundRef.current) {
+        explodeSoundRef.current.play();
+      }
+    } else {
+      explodedRef.current = null;
     }
   }, [exploded])
 
@@ -43,9 +50,11 @@ export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wron
   return (
 
     <group rotation={[0, 0, 0]} position={[0, 0, 0.45]}>
-      {exploded && explodedRef.current ? <primitive object={explodedRef.current as THREE.InstancedMesh} /> : (
+      {exploded && explodedRef.current ? <>
+
+        <primitive object={explodedRef.current as THREE.InstancedMesh} /></> : (
         <primitive
-          
+
           object={scene}
           scale={scale}
           // Важно: поворот внутри primitive оставляем статичным, 
@@ -53,6 +62,9 @@ export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wron
           rotation={rotation}
 
         />)}
+      <Suspense>
+        <PositionalAudio ref={explodeSoundRef} url="/music/boxes.ogg" distance={50} loop={false} />
+      </Suspense>
     </group>
   )
 }

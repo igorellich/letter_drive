@@ -58,8 +58,8 @@ export const useMeshDisintegrate = (
     }
 
     gltf.updateMatrixWorld(true);
-    const box = new THREE.Box3().setFromObject(gltf);
-    console.log('box', box)
+    // const box = new THREE.Box3().setFromObject(gltf);
+    
     const positions: THREE.Vector3[] = [];
     for (let i = 0; i < particleCount; i++) {
       const p = new THREE.Vector3();
@@ -98,8 +98,6 @@ export const useMeshDisintegrate = (
       setCurrMesh(mesh);
     },100)
    
-
-    console.log('✅ [INIT] Created', particleCount, 'particles, box:', box);
   }, [gltf, particleCount, particleSize, explosionSpeed]);
 
   useEffect(() => {
@@ -109,8 +107,7 @@ export const useMeshDisintegrate = (
 
   // ✅ Сброс при enabled = true
   useEffect(() => {
-    if (enabled) {
-      console.log('⚡ [ENABLED] Resetting particles...');
+    if (enabled) {      
       initParticles();
     }
   }, [enabled, initParticles]);
