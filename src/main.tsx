@@ -39,16 +39,16 @@ const App = () => {
     return ()=>document.removeEventListener('visibilitychange', onVisibilityChange);
   },[])
   const toggleFullscreen = (force?: boolean) => {
-    // const shouldEnter = force !== undefined ? force : !document.fullscreenElement;
-    // if (shouldEnter) {
-    //   document.documentElement.requestFullscreen().then(() => {
-    //     //@ts-ignore
-    //     if (screen.orientation?.lock) screen.orientation.lock('landscape').catch(() => { });
-    //   }).catch((e) => console.error(e));
-    // } 
-    // else if (document.exitFullscreen) {
-    //   document.exitFullscreen();
-    // }
+    const shouldEnter = force !== undefined ? force : !document.fullscreenElement;
+    if (shouldEnter) {
+      document.documentElement.requestFullscreen().then(() => {
+        //@ts-ignore
+        if (screen.orientation?.lock) screen.orientation.lock('landscape').catch(() => { });
+      }).catch((e) => console.error(e));
+    } 
+    else if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
   }
 
   useEffect(()=>{
@@ -70,7 +70,7 @@ const App = () => {
     setDiversMode(false);
     if (document.fullscreenElement) document.exitFullscreen();
   }
-  const diversTimeLeft = 1000;//AppStateController.getState().diversTimeLeftSec;
+  const diversTimeLeft = AppStateController.getState().diversTimeLeftSec;
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', background: '#001b26' }}>
 

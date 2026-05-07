@@ -42,7 +42,7 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width }: IGa
             const rightAnswersNum = results.filter(r => r === 'correct').length;
             if (rightAnswersNum > 7) {
                 const appState = AppStateController.getState();
-                appState.diversTimeLeftSec += rightAnswersNum == 10 ? 120 : 60;
+                appState.diversTimeLeftSec += rightAnswersNum == 10 ? 60 : 30;
                 AppStateController.setState(appState);
             }
         }

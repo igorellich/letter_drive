@@ -39,7 +39,7 @@ export const Diver: React.ComponentType<{ item: FoodItem, onSelectAnswer:(item: 
           <primitive
             object={steakClone}
             scale={0.21}
-            rotation={[-Math.PI/5,0, 0 ]}
+            rotation={[Math.PI/2,-Math.PI, 0 ]}
            
           />          
        

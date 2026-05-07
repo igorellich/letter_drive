@@ -3,7 +3,7 @@ import { AppStateController } from "../food/AppStateController";
 
 export const TimerScreen = (props: { onTimeEnd?: () => void }) => {
     const [seconds, setSeconds] = useState<number>(AppStateController.getState().diversTimeLeftSec);
-    const secondsRef = useRef<number>(1000); //useRef<number>(AppStateController.getState().diversTimeLeftSec);
+    const secondsRef = useRef<number>(AppStateController.getState().diversTimeLeftSec);
     useEffect(() => {
         const intervalId = setInterval(() => {
             secondsRef.current -= 1;
