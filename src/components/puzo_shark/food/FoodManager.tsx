@@ -1,4 +1,4 @@
-import React, { useCallback, type JSX, type ReactElement } from 'react'
+import React, { useCallback, type ReactElement } from 'react'
 import * as THREE from 'three'
 
 import { useCollision } from './useCollision'

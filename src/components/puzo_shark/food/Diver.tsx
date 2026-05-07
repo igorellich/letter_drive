@@ -1,8 +1,8 @@
-import { act, useEffect, useMemo, useState } from "react"
-import { useFrame } from "@react-three/fiber"
-import { Center, Environment, Html, useAnimations, useGLTF } from "@react-three/drei"
+import { useEffect, useMemo} from "react"
+
+import { Html, useAnimations, useGLTF } from "@react-three/drei"
 import type { FoodItem } from "./FoodManager"
-import * as THREE from 'three'
+
 //@ts-ignore
  import {clone} from 'three/examples/jsm/utils/SkeletonUtils'
 export const Diver: React.ComponentType<{ item: FoodItem, onSelectAnswer:(item: FoodItem)=>void }> = (props: { item: FoodItem, onSelectAnswer:(item: FoodItem)=>void }) => {
