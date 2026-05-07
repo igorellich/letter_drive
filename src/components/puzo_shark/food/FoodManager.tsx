@@ -53,7 +53,7 @@ export const useFoodManager = ({
   }, [foodItems]);
  
   // Логика коллизий (использует ref-ы объектов для точности)
-  useCollision(sharkRef, foodItems, onEat, 0.6)
+  useCollision(sharkRef, foodItems, onEat, 0.8)
   const onSelectAnswerHandler = (item: FoodItem) => {
     if (onSelectAnswer) {
       onSelectAnswer(item);

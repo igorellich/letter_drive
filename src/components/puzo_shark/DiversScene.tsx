@@ -16,6 +16,7 @@ import { Diver } from "./food/Diver"
 import { useFrame } from "@react-three/fiber"
 import { TimerScreen } from "./hud/TimerSceen"
 import { AppStateController } from "./food/AppStateController"
+import type { IQuestion } from "./food/tests/interfaces"
 
 interface IGameSceneProps {
     joystickData: JoystickData,
@@ -24,11 +25,10 @@ interface IGameSceneProps {
     height: number,
     freeze: boolean
 }
-const a = [{ answer: [], question: '1', variants: [] },
-{ answer: [], question: '2', variants: [] },
-{ answer: [], question: '3', variants: [] },
-{ answer: [], question: '4', variants: [] },
-{ answer: [], question: '5', variants: [] }]
+const a: IQuestion[] = []
+for (let i = 0; i < 15; i++) {
+    a.push({ answer: [], question: (i + 1).toString(), variants: [] })
+}
 const targetPositions: { [id: string]: THREE.Vector3 } = {};
 export const DiversScene = ({ joystickData, onBack, freeze, height, width }: IGameSceneProps) => {
     const sharkRef = useRef<THREE.Mesh>(null!);
@@ -51,7 +51,7 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width }: IGa
     // Вспомогательные объекты для расчетов
     const playerPos = new THREE.Vector3()
 
-    useFrame((_,delta) => {
+    useFrame((_, delta) => {
         if (!sharkRef.current) return
         for (const diver of divers) {
             if (!targetPositions[diver.props.item.id]) {
@@ -70,18 +70,17 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width }: IGa
             if (item.ref?.current) {
                 if (diver.props.item.eaten) {
                     eatSoundRef.current?.play();
-                    item.ref.current.scale.lerp(new THREE.Vector3(0, 0, 0), 0.6)
+                    diver.props.item.eaten = false;
+                    item.ref.current.position.set(100, 100, 100)
+                    
+                            
+                            const state = AppStateController.getState();
+                            state.diversEaten += 1;
+                            AppStateController.setState(state);
+                  
+
                     setTimeout(() => {
-                        if (item.ref) {
-                            item.ref.current.position.set(100, 100, 100)
-                            diver.props.item.eaten = false;
-                        }
-                    },300)
-                    const state = AppStateController.getState();
-                    state.diversEaten += 1;
-                    AppStateController.setState(state);
-                    setTimeout(() => {
-                        item.ref?.current.scale.set(1,1,1)
+                        
                         item.ref?.current.position.set(Math.random() * width - width / 2, Math.random() * height - height / 2, 0.4);
 
                     }, 1000)
@@ -122,19 +121,19 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width }: IGa
                     }
                     if (Math.abs(item.ref.current.position.y) >= halfH - 1) {
                         targetPos.y *= -0.5
-                    }                    
+                    }
                     // 4. ПЛАВНОЕ ДВИЖЕНИЕ (LERP)
                     // Меш плавно перемещается из текущей позиции в целевую
-                    const angle = Math.atan2(targetPos.y - item.ref.current.position.y, targetPos.x - item.ref.current.position.x)-Math.PI/2;
+                    const angle = Math.atan2(targetPos.y - item.ref.current.position.y, targetPos.x - item.ref.current.position.x) - Math.PI / 2;
                     const targerQuaterion = new THREE.Quaternion();
-                    targerQuaterion.setFromAxisAngle(new THREE.Vector3(0,0,1),angle);
-                     item.ref.current.quaternion.slerp(targerQuaterion,0.1);
-                    
-                     item.ref.current.position.lerp(targetPos, delta/3);
+                    targerQuaterion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), angle);
+                    item.ref.current.quaternion.slerp(targerQuaterion, 0.1);
+
+                    item.ref.current.position.lerp(targetPos, delta / 3);
                     //item.ref.current.position.set(1,1,1)
-                    
+
                 }
-                
+
             }
         }
     })
@@ -149,7 +148,7 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width }: IGa
                     {!freeze && <>
                         <Joystick joystickData={joystickData} />
                         <div style={{ position: 'absolute', width: '100%', height: '100%', fontFamily: 'sans-serif' }}>
-                            <TimerScreen onTimeEnd={onBack}/>
+                            <TimerScreen onTimeEnd={onBack} />
                         </div></>}
 
                 </Html>
