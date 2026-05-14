@@ -53,6 +53,12 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width }: IGa
         const shuffled = [...allIndexes].sort(() => 0.5 - Math.random());
         setSessionIndexes(shuffled.slice(0, 10));
     }, [test]);
+    useEffect(() => {
+        const resultsLength = results.filter(r => r !== 'pending').length;
+           
+                setCurrentIndex(resultsLength);
+            
+    }, [results])
 
 
 
@@ -66,11 +72,10 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width }: IGa
                 newResults[currentIndex] = item.right ? 'correct' : 'wrong';
                 return newResults;
             });
-            setTimeout(() => {
-                setCurrentIndex(prev => prev + 1);
-            }, 3000);
+         
         }
     }
+
 
     
     const selectedQuestions = useMemo(() => test.questions.filter((_, i) => sessionIndexes.includes(i)), [test, sessionIndexes]);
