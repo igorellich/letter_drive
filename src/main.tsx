@@ -12,6 +12,8 @@ import { menuButtonStyle, TestSelectionMenu } from './components/puzo_shark/hud/
 import { useAudio } from './components/puzo_shark/hooks/useAudio'
 import { DiversScene } from './components/puzo_shark/DiversScene'
 import { AppStateController } from './components/puzo_shark/food/AppStateController'
+import { SKINS, loadSkinId, saveSkinId } from './components/puzo_shark/skins/sharkSkins'
+import { SkinPicker } from './components/puzo_shark/skins/SkinPicker'
 
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
 export const FreezeContext = createContext<(freeze:boolean)=>void>((_)=>true);
@@ -21,6 +23,9 @@ const App = () => {
   const [selectedTest, setSelectedTest] = useState<ITest | null>(null)
   const [freeze, setFreeze] = useState<boolean>(false);
   const [diversMode, setDiversMode] = useState<boolean>(false);
+  const [currentSkinId, setCurrentSkinId] = useState<string>(loadSkinId);
+  const [skinPickerOpen, setSkinPickerOpen] = useState<boolean>(false);
+  const currentSkin = SKINS.find(s => s.id === currentSkinId) ?? SKINS[0];
   // Используем наш хук. Музыка играет только если игра запущена И не на паузе.
   useAudio({
     src: '/music/main.ogg',
@@ -77,12 +82,21 @@ const App = () => {
       {/* Overlay: Меню и Пауза */}
       {paused && (
         <div style={overlayStyle}>
-          {!gameStarted ? (<>            
+          {!gameStarted ? (skinPickerOpen ? (
+            <SkinPicker
+              currentSkinId={currentSkin.id}
+              onPick={(id) => { saveSkinId(id); setCurrentSkinId(id); setSkinPickerOpen(false); }}
+              onClose={() => setSkinPickerOpen(false)}
+            />
+          ) : (<>
             <TestSelectionMenu startGame={startGame} />
            {<button onClick={() => diversTimeLeft > 0 && startGame(null)} style={{...menuButtonStyle, marginBottom:15}}>
               Дайверы &#127940; {AppStateController.getState().diversEaten} съедено. {diversTimeLeft>0?`Осталось ${diversTimeLeft} секунд.`:'Проходи тесты, чтобы получить время.'}
             </button>}
-          </>
+            <button onClick={() => setSkinPickerOpen(true)} style={menuButtonStyle}>
+              Скин акулы &#127912;
+            </button>
+          </>)
           ) : (
             /* МЕНЮ ПАУЗЫ */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -118,6 +132,7 @@ const App = () => {
               test={selectedTest}
               height={15}
               width={15}
+              skin={currentSkin}
             />
           )}
           {diversMode && (
@@ -127,6 +142,7 @@ const App = () => {
               joystickData={joystickData}             
               height={20}
               width={20}
+              skin={currentSkin}
             />
           )}
         </Suspense>}

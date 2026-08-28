@@ -14,6 +14,7 @@ import { TestEndScreen } from "./hud/TestEndScreen"
 
 import { useFollowingCamera } from "./hooks/useFollowingCamera"
 import { AppStateController } from "./food/AppStateController"
+import { SKINS, type SharkSkin } from "./skins/sharkSkins"
 
 interface IGameSceneProps {
     test: ITest,
@@ -21,10 +22,11 @@ interface IGameSceneProps {
     onBack: () => void,
     width: number,
     height: number,
-    freeze: boolean
+    freeze: boolean,
+    skin?: SharkSkin
 }
 
-export const Scene = ({ test, joystickData, onBack, freeze, height, width }: IGameSceneProps) => {
+export const Scene = ({ test, joystickData, onBack, freeze, height, width, skin = SKINS[0] }: IGameSceneProps) => {
     const sharkRef = useRef<THREE.Mesh>(null!);
     const wrongAnserHandleRef = useRef(() => null)
     useFollowingCamera({ targetRef: sharkRef })
@@ -113,9 +115,10 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width }: IGa
                 {(actionRef: RefObject<THREE.AnimationAction>) => <Shark
                     wrongAnswerHandleRef={wrongAnserHandleRef}
                     actionRef={actionRef}
-                    modelPath='/models/shark_min.glb'
-                    rotation={[Math.PI / 2, Math.PI, 0]}
-                    scale={0.003}
+                    modelPath={skin.modelPath}
+                    rotation={skin.gameplay.rotation}
+                    scale={skin.gameplay.scale}
+                    fitSize={skin.gameplay.fitSize}
                 />}
             </ControlledMesh>
 

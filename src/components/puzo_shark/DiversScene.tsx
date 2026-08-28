@@ -1,7 +1,8 @@
 import { Html, PerspectiveCamera, PositionalAudio, Stats, useGLTF } from "@react-three/drei"
+import { useFrame, useThree } from "@react-three/fiber"
 import { ControlledMesh } from "./ControlledMesh"
 import { WaterPlane } from "./waterPlane/WaterPlane"
-import { Suspense, useRef, type ReactElement, type RefObject } from "react"
+import { Suspense, useEffect, useRef, type ReactElement, type RefObject } from "react"
 import * as THREE from 'three'
 import { Shark } from "./Shark"
 
@@ -13,25 +14,36 @@ import { Joystick, type JoystickData } from "./Joystick"
 import { useFollowingCamera } from "./hooks/useFollowingCamera"
 import { useFoodManager, type FoodItem } from "./food/FoodManager"
 import { Diver } from "./food/Diver"
-import { useFrame } from "@react-three/fiber"
 import { TimerScreen } from "./hud/TimerSceen"
 import { AppStateController } from "./food/AppStateController"
 import type { IQuestion } from "./food/tests/interfaces"
+import { SKINS, type SharkSkin } from "./skins/sharkSkins"
 
 interface IGameSceneProps {
     joystickData: JoystickData,
     onBack: () => void,
     width: number,
     height: number,
-    freeze: boolean
+    freeze: boolean,
+    skin?: SharkSkin
 }
 const a: IQuestion[] = []
 for (let i = 0; i < 15; i++) {
     a.push({ answer: [], question: (i + 1).toString(), variants: [] })
 }
 const targetPositions: { [id: string]: THREE.Vector3 } = {};
-export const DiversScene = ({ joystickData, onBack, freeze, height, width }: IGameSceneProps) => {
+export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin = SKINS[0] }: IGameSceneProps) => {
     const sharkRef = useRef<THREE.Mesh>(null!);
+
+    // TEMP DEBUG
+    const __threeScene = useThree((s) => s.scene)
+    useEffect(() => {
+        if (import.meta.env.DEV) {
+            const w = window as unknown as Record<string, unknown>
+            w.__threeScene = __threeScene
+            w.__three = THREE
+        }
+    }, [__threeScene])
 
     useFollowingCamera({ targetRef: sharkRef })
 
@@ -159,9 +171,10 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width }: IGa
                 {(actionRef: RefObject<THREE.AnimationAction>) => <Shark
 
                     actionRef={actionRef}
-                    modelPath='/models/shark_min.glb'
-                    rotation={[Math.PI / 2, Math.PI, 0]}
-                    scale={0.003}
+                    modelPath={skin.modelPath}
+                    rotation={skin.gameplay.rotation}
+                    scale={skin.gameplay.scale}
+                    fitSize={skin.gameplay.fitSize}
                 />}
             </ControlledMesh>
 
