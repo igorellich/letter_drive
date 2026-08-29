@@ -87,20 +87,16 @@ export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wron
 
   return (
 
-    <group rotation={[0, 0, 0]} position={[0, 0, 0.45]}>
-      {exploded && explodedRef.current ? <>
-
-        <primitive object={explodedRef.current as THREE.InstancedMesh} /></> : (
-        <primitive
-
-          object={scene}
-          scale={effectiveScale}
-          position={position}
-          // Важно: поворот внутри primitive оставляем статичным, 
-          // чтобы "нос" смотрел вперед по оси движения группы
-          rotation={rotation}
-
-        />)}
+    <group position={[0, 0, 0.45]}>
+      {exploded && explodedRef.current ? (
+        <primitive object={explodedRef.current as THREE.InstancedMesh} />
+      ) : (
+        // Transform не пишем в расшаренный gltf.scene (useGLTF-кэш общий и для превью) —
+        // накладываем его на локальную group, чтобы превью не "переворачивалось на бок" после игры.
+        <group rotation={rotation as [number, number, number]} scale={effectiveScale} position={position}>
+          <primitive object={scene} />
+        </group>
+      )}
       <Suspense>
         <PositionalAudio ref={explodeSoundRef} url="/music/boxes.ogg" distance={50} loop={false} />
       </Suspense>
