@@ -6,7 +6,7 @@ interface FollowCameraProps {
   offset?: [number, number, number]
 }
 
-export const useFollowingCamera = ({ targetRef, offset = [0, 0, 5] }: FollowCameraProps) => {
+export const useFollowingCamera = ({ targetRef, offset = [0, -1.8, 3.6] }: FollowCameraProps) => {
   // Вспомогательные векторы для расчетов (чтобы не создавать новые каждый кадр)
   const targetPosition = new THREE.Vector3()
   const cameraPosition = new THREE.Vector3()

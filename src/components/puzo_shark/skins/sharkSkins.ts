@@ -11,6 +11,8 @@ export interface SharkSkin {
     preview: {
         rotation: [number, number, number]
         autoRotateSpeed: number
+        scale?: number
+        position?: [number, number, number]
     }
 }
 
@@ -22,117 +24,118 @@ export const SKINS: SharkSkin[] = [
         title: 'Классическая акула',
         modelPath: '/models/shark_min.glb',
         gameplay: { scale: 0.003, rotation: [Math.PI / 2, Math.PI, 0] },
-        preview: { rotation: [Math.PI / 2, Math.PI, 0], autoRotateSpeed: 1.5 }
+        // Превью: акула «плывёт» горизонтально боком (нос вправо), спина вверх. Нос модели в корне = +Y.
+        preview: { rotation: [0, Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'hamburger',
         title: 'Гамбургер',
         modelPath: '/models/hamburger.glb',
         gameplay: {
-            scale: 0.13686,
-            rotation: [0, 0, Math.PI / 2],
-            position: [0.6961, -0.0009, 0.0095]
+            scale: 0.04901,
+            rotation: [Math.PI / 2, Math.PI / 2, 0],
+            position: [0.00945, -0.00151, -0.26618]
         },
-        preview: { rotation: [0, 0, Math.PI / 2], autoRotateSpeed: 1.5 }
+        preview: { rotation: [0, -Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'donut',
         title: 'Пончик',
         modelPath: '/models/donut.glb',
         gameplay: {
-            scale: 0.17409,
-            rotation: [0, 0, Math.PI / 2],
-            position: [0.3786, 0.0004, -0.0144]
+            scale: 0.06234,
+            rotation: [Math.PI / 2, Math.PI / 2, 0],
+            position: [0.00091, -0.00105, -0.15249]
         },
-        preview: { rotation: [0, 0, Math.PI / 2], autoRotateSpeed: 1.5 }
+        preview: { rotation: [0, -Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'octopus',
         title: 'Осьминог',
         modelPath: '/models/octopus.glb',
         gameplay: {
-            scale: 0.00331,
+            scale: 0.00118,
             rotation: [Math.PI / 2, Math.PI / 2, 0],
-            position: [0.0375, -0.0019, 0.5372]
+            position: [0.01344, -0.0019, 0.18152]
         },
-        preview: { rotation: [Math.PI / 2, Math.PI / 2, 0], autoRotateSpeed: 1.5 }
+        preview: { rotation: [0, -Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'whale',
         title: 'Кит',
         modelPath: '/models/whale.glb',
         gameplay: {
-            scale: 1.55519,
+            scale: 0.55694,
             rotation: [Math.PI / 2, Math.PI / 2, 0],
-            position: [0.343, 0.261, 0.1549]
+            position: [0.12284, 0.09226, 0.04462]
         },
-        preview: { rotation: [Math.PI / 2, Math.PI / 2, 0], autoRotateSpeed: 1.5 }
+        preview: { rotation: [0, -Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'triceratops',
         title: 'Трицератопс',
         modelPath: '/models/triceratops.glb',
         gameplay: {
-            scale: 0.07741,
+            scale: 0.02772,
             rotation: [-Math.PI / 2, 0, -Math.PI],
-            position: [0, 0.0816, -0.3071]
+            position: [0, 0.02801, -0.12082]
         },
-        preview: { rotation: [-Math.PI / 2, 0, -Math.PI], autoRotateSpeed: 1.5 }
+        preview: { rotation: [0, 0, 0], autoRotateSpeed: 1.5, scale: 0.13327, position: [0, -0.4998, 0.1439] }
     },
     {
         id: 'trex',
         title: 'Тираннозавр',
         modelPath: '/models/trex.glb',
         gameplay: {
-            scale: 0.05616,
+            scale: 0.02011,
             rotation: [-Math.PI / 2, 0, -Math.PI],
-            position: [0, 0.0591, -0.4442]
+            position: [0, 0.01996, -0.16991]
         },
-        preview: { rotation: [-Math.PI / 2, 0, -Math.PI], autoRotateSpeed: 1.5 }
+        preview: { rotation: [0, 0, 0], autoRotateSpeed: 1.5, scale: 0.09668, position: [0, -0.7358, 0.1054] }
     },
     {
         id: 'ufo',
         title: 'Летающая тарелка',
         modelPath: '/models/ufo.glb',
         gameplay: {
-            scale: 0.00411,
+            scale: 0.00147,
             rotation: [Math.PI / 2, Math.PI / 2, 0],
-            position: [0, -0.0019, -0.136]
+            position: [0, -0.0019, -0.05954]
         },
-        preview: { rotation: [Math.PI / 2, Math.PI / 2, 0], autoRotateSpeed: 1.5 }
+        preview: { rotation: [0, -Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'robot',
         title: 'Робот',
         modelPath: '/models/robot.glb',
         gameplay: {
-            scale: 0.26327,
+            scale: 0.09428,
             rotation: [-Math.PI / 2, 0, -Math.PI],
-            position: [-0.0007, 0.0022, -0.6216]
+            position: [-0.00026, -0.0004, -0.23346]
         },
-        preview: { rotation: [-Math.PI / 2, 0, -Math.PI], autoRotateSpeed: 1.5 }
+        preview: { rotation: [0, 0, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'rocket',
         title: 'Ракета',
         modelPath: '/models/rocket.glb',
         gameplay: {
-            scale: 1.29208,
+            scale: 0.46272,
             rotation: [0, 0, 0],
-            position: [0.0115, -0.3779, -0.0138]
+            position: [0.00411, -0.13656, -0.01577]
         },
-        preview: { rotation: [0, 0, 0], autoRotateSpeed: 1.5 }
+        preview: { rotation: [-Math.PI / 2, 0, -Math.PI], autoRotateSpeed: 1.5 }
     },
     {
         id: 'duck',
         title: 'Резиновая уточка',
         modelPath: '/models/rubber_duck.glb',
         gameplay: {
-            scale: 0.24329,
+            scale: 0.08712,
             rotation: [-Math.PI / 2, 0, -Math.PI],
-            position: [0, -0.0019, -0.7143]
+            position: [0, -0.0019, -0.26664]
         },
-        preview: { rotation: [-Math.PI / 2, 0, -Math.PI], autoRotateSpeed: 1.5 }
+        preview: { rotation: [0, 0, 0], autoRotateSpeed: 1.5 }
     }
 ]
 

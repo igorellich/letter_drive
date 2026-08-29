@@ -89,48 +89,51 @@
 - **Проверка движения**: читать `#shark-debug` (временный HUD) или позицию через временный `window.__sharkPos`.
 - **Кандидат-баг**: в nipplejs 0.10.2 коллекция, судя по коду (`bindCollection` слушает только `dir/plain`), не всплывает `move` до `manager.on('move')`. `manager.trigger('move', …)` не дёргал app-хендлер в тестах. Джойстик реальным вводом может быть сломан — проверять/чинить при доработке.
 
-## Скины акулы (пикер и «подгонка размеров») — СТАТУС 2026-08-29 (незавершено)
-Задача: пикер скинов (готов) + подгонка 10 новых `.glb`-скинов к эталону классической акулы (размер/ориентация/центр).
+## Скины акулы (пикер и «подгонка размеров») — СТАТУС 2026-08-29
+Задача: пикер скинов (готов) + подгонка 10 `.glb`-скинов под gameplay-размер и превью в пикере.
 
-### Эталон и конвенции
-- Классическая (classic) акула: raw fileWorld size `(248.72, 580.83, 255.81)`, center `(0, −5.64, −0.65)`. При `scale 0.003` + rotation `[π/2, π, 0]` (three.js «XYZ») даёт group-local box `[0.7462, 0.7674, 1.7425]`, center `[0, −0.0019, −0.0169]`. **Target maxDim (бо́льшая из осей после трансформа) = 1.7425.**
-- Конвенция осей: game forward = мировой +Y, up = +Z. Камера `PerspectiveCamera [0,0,5]`, форвард −Z. У классики самая длинная ось (Z≈1.74) — это ВЫСОТА (спинной плавник), НЕ длина. Длина нос-хвост ≈ 0.767 вдоль +Y.
-- Анатомия моделей: shark нос = raw +Z (глаза/зубы на z≈121), движение вперёд без потери = nose→мир +Y. dinos (trex/triceratops): нос +Z, up +Y. whale нос +X, up +Y. octopus/ufo/robot: up +Y. hamburger/donut: плоскость, up = Z. rocket: длинная ось raw Y, tip +Y.
-- Проверка конвенции three 0.182.0 (euler «XYZ»): классическая quat `[0,0.707,0.707,0]` = euler `[−π/2,0,−π]`; raw +X→мир (−1,0,0), +Y→(0,0,1), +Z→(0,1,0).
+### Целевой размер (итог, исправлен)
+- Реальный дайвер в мире = **0.416** (raw 1.981 × scale 0.21 в `Diver.tsx`).
+- **Целевой размер скина = 1.5 × дайвера = 0.624** (maxDim после gameplay-трансформа). Проверено в браузере: whale sharkMax=0.624, diverMax=0.416, ratio=1.5 ✓. Ранее ошибочно целились в 1.7425 — исправлено.
+- Классика (эталон): scale 0.003, rotation `[π/2, π, 0]` (three.js euler «XYZ»).
+- Конвенция осей в игре: forward = мировой +Y, up = +Z (левосторонняя). Камера игры `PerspectiveCamera [0,0,5]`.
 
-### Вычисленные трансформы (compute2.mjs, реальный three; уже записаны в `sharkSkins.ts` gameplay)
+### Gameplay-трансформы (актуальные, записаны в `sharkSkins.ts`)
 format: id: `scale`, `rotation`, `position`
-- hamburger: `0.13686`, `[0,0,π/2]`, `[0.6961, −0.0009, 0.0095]`
-- donut: `0.17409`, `[0,0,π/2]`, `[0.3786, 0.0004, −0.0144]`
-- octopus: `0.00331`, `[−π/2,0,π/2]`, `[−0.5541, 0.0356, −0.0169]`
-- whale: `1.55519`, `[−π/2,0,π/2]`, `[−0.1718, 0.3411, −0.2798]`
-- triceratops: `0.07741`, `[−π/2,0,−π]`, `[0, 0.0816, −0.3071]`
-- trex: `0.05616`, `[−π/2,0,−π]`, `[0, 0.0591, −0.4442]`
-- ufo: `0.00411`, `[−π/2,0,π/2]`, `[0.1191, −0.0019, −0.0169]`
-- robot: `0.26327`, `[−π/2,0,−π]`, `[−0.0007, 0.0022, −0.6216]`
-- rocket: `1.29208`, `[0,0,0]`, `[0.0115, −0.3779, −0.0138]`
-- duck: `0.24329`, `[−π/2,0,−π]`, `[0, −0.0019, −0.7143]`
-- Код в `src/components/puzo_shark/skins/sharkSkins.ts`: добавлено необяз. `position` в `gameplay`, `fitSize` у новых скинов УБРАН (превью использует gameplay-rotation, WYSIWYG).
+- classic: `0.003`, `[π/2, π, 0]`, без position
+- hamburger: `0.04901`, `[π/2, π/2, 0]`, `[0.00945, −0.00151, −0.26618]`
+- donut: `0.06234`, `[π/2, π/2, 0]`, `[0.00091, −0.00105, −0.15249]`
+- octopus: `0.00118`, `[π/2, π/2, 0]`, `[0.01344, −0.0019, 0.18152]`
+- whale: `0.55694`, `[π/2, π/2, 0]`, `[0.12284, 0.09226, 0.04462]`
+- triceratops: `0.02772`, `[−π/2, 0, −π]`, `[0, 0.02801, −0.12082]`
+- trex: `0.02011`, `[−π/2, 0, −π]`, `[0, 0.01996, −0.16991]`
+- ufo: `0.00147`, `[π/2, π/2, 0]`, `[0, −0.0019, −0.05954]`
+- robot: `0.09428`, `[−π/2, 0, −π]`, `[−0.00026, −0.0004, −0.23346]`
+- rocket: `0.46272`, `[0, 0, 0]`, `[0.00411, −0.13656, −0.01577]`
+- duck: `0.08712`, `[−π/2, 0, −π]`, `[0, −0.0019, −0.26664]`
 
-### НАЙДЕННЫЕ БАГИ (причины расхождения расчёт ↔ «измеренный в браузере»)
-1. **`position` не прокидывается в игру**: и в `DiversScene.tsx` (строки ~171–178), и в `Scene.tsx` (~115–121) `<Shark …>` передают только `rotation`/`scale`/`fitSize`, НО НЕ `position`. В `Shark.tsx` дефолт `[0,0,0]`. → Чинить: добавить `position={skin.gameplay.position}` в ОБА монтирования.
-2. **Хук `window.__skinBox` в `Shark.tsx` НЕПРАВИЛЬНЫЙ** (даёт левые размеры): `scene.clone(true)` копирует уже применённые R3F-пропсы (scale/то и противотрансформы sit) на корень gltf-сцены, а затем хук дополнительно применяет `holder.scale.setScalar(effectiveScale)` → **двойной scale**. Пример: donut замер 0.30 вместо 1.74 (1.74×0.174). Все цифры `cdp_measure_skins.js` — с этого хука (двойной scale + перепутанные оси) — НЕ ДОВЕРЯТЬ.
-3. **Rotation на самом деле работает**: verify — живой бокс показывал swap осей (x∋0.74=raw y, y∋1.71=raw x) ⇒ euler z=+π/2 применился. Пробник «цепочка родителей» не печатал rotation у подуровней — не смущаться, если не видно.
-4. Ранние провалы `cdp_tree2`/«loaded:false» — гонка: ждать кнопку «Дайверы 🏄», кликать, затем поллить `window.__threeScene` и кожу.
+### Превью в пикере (`SkinPreview.tsx`)
+- НЕ использует gameplay-rotation: своя `preview.rotation` (модель «стоит», up→+Y экрана, нос→+Z к камере); `fitSize` у новых скинов УБРАН.
+- Камера фиксирована `[4.5, 2.2, 4.5]` (сбоку на уровне глаз, НЕ снизу), target `[0,0,0]`, FOV 45.
+- Автоподгонка: три `Bounds` УБРАН (он ставил камеру под модель y=−1.6 → «видно снизу»). Вместо него `useFrame`: пока maxDim(rootRef) ≠ FIT_SIZE — сброс holder scale/pos, измерение raw-бокса `innerRef`, `scale=FIT_SIZE/maxDim`. Самопочиняется при async-загрузке glTF/draco (`useLayoutEffect` ловил пустой/недогруженный бокс — источник «what случилось с масштабом»).
+- FIT_SIZE=3; OrbitControls autoRotate, enablePan=false.
+- Иерархия: `<rootRef><group ref={holder}><group ref={innerRef} rotation=preview{cam}/><primitive scene/></group></group>`.
 
-### Правильный метод измерения в браузере (подтверждён)
-- Временный хук в `DiversScene.tsx`: `window.__threeScene = useThree(s=>s.scene)`; `window.__three = THREE` (импорт `useThree` из `@react-three/fiber`). Типы — `window` через `Record<string, unknown>`.
-- Метод: `sceneObj.children[3]` = мировой контейнер (в нём плоскость воды + shark). Для поддерева шарка: каждый mesh `o`, `rel = inv(ch.matrixWorld) * o.matrixWorld`, разложить через `decompose(pos,quat,scl)` (в r182 нет `getPosition/getScale` у Matrix4), применить к углам `geometry.boundingBox` — получить group-local union box. Так donut дал верный `[0.74, 1.71, 1.7425]` центр z≈0.30 (с группами [0,0,0.45] и [0,0,−0.15]).
-- Дайверы (= top children 4..18) в мировой системе имеют огромные координаты (сотни тысяч) — при расчёте суб-дерева НЕ использовать `getWorldPosition`, только `rel`-матрицу.
-- Скрипты: `Temp\opencode\cdp_tree5.js` (суб-дерево шарка, верный замер), `cdp_probe9.js` (цепочка родителей/матрицы), `cdp_tree4.js` (весь top), `cdp_measure_skins.js` (НЕ ДОВЕРЯТЬ — читал `__skinBox`).
-- Node-математика: `Temp\opencode\compute2.mjs` (итоговые трансформы), `measure_glb.js` (raw box через accessor min/max, работает и для draco — у draco в JSON есть min/max), `isolate.mjs`, `node_dump.mjs`, `joints.mjs`. three подключать `file:///E:/threejs/letter_drive/node_modules/three/build/three.module.js`.
+### Анатомия/конвенции моделей
+- shark нос = raw +Z; dinos (trex/triceratops) нос +Z, up +Y; whale нос +X, up +Y; octopus/ufo/robot up +Y; **hamburger/donut — плоскость, толщина/«стопка» вдоль raw Y** (лежат плашмя, ротация `[π/2,π/2,0]`); rocket длинная ось raw Y, tip +Y.
+- three 0.182 euler «XYZ».
 
-### TODO (на будущее)
-1. Прокинуть `position` в `<Shark/>` в `Scene.tsx` и `DiversScene.tsx`.
-2. Удалить/починить `__skinBox`-хук в `Shark.tsx` и `__threeScene`-хук в `DiversScene.tsx` (перед сдачей — обязательно).
-3. Прогнать замер по методу cdp_tree5 для ВСЕХ 10 скинов (не через `__skinBox`): сравнить size maxDim=1.7425, центр (0,−0.0019,−0.0169) group-local. Для trex/triceratops учёт: rest-поза анимации может давать ±небольшую дельту против bind-pose.
-4. Проверить направление «носа» каждого скина (растёт ли мир +Y при движении вперёд без отличий).
-5. `npm run build` (tsc+vite) зелёный на 2026-08-29; `npm run lint` по репо сломан pre-existing, файлы скинов при этом чистые.
+### Измерение скинов в браузере (метод)
+- Временные хуки (`window.__threeScene=useThree(s=>s.scene)`, `window.__three=THREE`) в `DiversScene.tsx`; числа — ТОЛЬКО через CDP `Runtime.evaluate` (снапшоты/скриншоты не для чисел).
+- Метод: `sceneObj.children[3]` = мировой контейнер (вода + shark). Для суб-дерева шарка: `rel = inv(ch.matrixWorld) * o.matrixWorld` → `decompose` (в r182 нет getPosition/getScale у Matrix4). Дайверы в мировой системе — сотни тысяч: только rel.
+- Скрипты: `Temp\opencode\cdp_tree5.js` (верный замер), `cdp_measure_skins.js` — НЕ ДОВЕРЯТЬ (читал битый `__skinBox`, двойной scale). Node: `compute2.mjs`, `measure_glb.js` (box через accessor min/max, работает и для draco), three через `file:///E:/threejs/letter_drive/node_modules/three/build/three.module.js`.
+
+### Сделано / TODO
+- [x] `position` прокинут в `<Shark/>` в `Scene.tsx` и `DiversScene.tsx` (d861dd5).
+- [x] Убраны debug-хуки `__skinBox`/`__threeScene`/`__previewCam`/`__joy` (grep чистый по репо).
+- [x] Камера gameplay: `useFollowingCamera` offset `[0, −1.8, 3.6]` — мягкий наклон, камера сзади-выше акулы (проверено: camera pos ~[0,−1.8,3.45], rot x≈0.464).
+- [x] `npm run build` (tsc+vite) зелёный; `npm run lint` по репо сломан pre-existing, файлы скинов при этом чистые.
+- [ ] Проверить направление «носа» каждого скина в gameplay (мир +Y при движении вперёд без отличий).
 
 ## Полезные файлы
 - `src/main.tsx` — App, `joystickData`, выбор режима, пауза/fullscreen.

@@ -13,18 +13,18 @@ export const Diver: React.ComponentType<{ item: FoodItem, onSelectAnswer:(item: 
     const { actions, names } = useAnimations(animations, steakClone)
   
  
-  useEffect(()=>{
+useEffect(()=>{
     if (names.length > 0) {
-         
-          // Запускаем основную анимацию (обычно плавание)
-          const action = actions[names[0]]
-          if(action && action.timeScale){
-          action.timeScale = 3;
-          action?.reset().fadeIn(2).play()
-          }
-        }
+      // Запускаем основную анимацию (обычно плавание)
+      // timeScale=1: цикл 1.96s идёт в реальном времени, без частых рестартов
+      const action = actions[names[0]]
+      if (action) {
+        action.reset().fadeIn(1.2).play()
+        action.timeScale = 1
+      }
+    }
 
-  },[])
+  },[names])
   
   // useFrame(()=>{
   //   setPosition(item.position);

@@ -128,7 +128,10 @@ export const ControlledMesh = (props: {
 
     if (actionRef.current) {
       const ts = moving ? (path.length > 0 || joystickData.active ? 11.0 : 3.5) : 0.6;
-      actionRef.current.timeScale = THREE.MathUtils.lerp(actionRef.current.timeScale, ts, 0.2);
+      // Скин может ограничить разгон (userData.maxTimeScale > 0)
+      const maxTs = (actionRef.current as THREE.AnimationAction & { userData?: { maxTimeScale?: number } }).userData?.maxTimeScale || 0;
+      const clamped = maxTs > 0 ? Math.min(ts, maxTs) : ts;
+      actionRef.current.timeScale = THREE.MathUtils.lerp(actionRef.current.timeScale, clamped, 0.2);
     }
   });
 
