@@ -119,6 +119,7 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width, skin 
                     rotation={skin.gameplay.rotation}
                     scale={skin.gameplay.scale}
                     fitSize={skin.gameplay.fitSize}
+                    position={skin.gameplay.position}
                 />}
             </ControlledMesh>
 

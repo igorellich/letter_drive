@@ -52,10 +52,10 @@ export const SKINS: SharkSkin[] = [
         modelPath: '/models/octopus.glb',
         gameplay: {
             scale: 0.00331,
-            rotation: [-Math.PI / 2, 0, Math.PI / 2],
-            position: [-0.5541, 0.0356, -0.0169]
+            rotation: [Math.PI / 2, Math.PI / 2, 0],
+            position: [0.0375, -0.0019, 0.5372]
         },
-        preview: { rotation: [-Math.PI / 2, 0, Math.PI / 2], autoRotateSpeed: 1.5 }
+        preview: { rotation: [Math.PI / 2, Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'whale',
@@ -63,10 +63,10 @@ export const SKINS: SharkSkin[] = [
         modelPath: '/models/whale.glb',
         gameplay: {
             scale: 1.55519,
-            rotation: [-Math.PI / 2, 0, Math.PI / 2],
-            position: [-0.1718, 0.3411, -0.2798]
+            rotation: [Math.PI / 2, Math.PI / 2, 0],
+            position: [0.343, 0.261, 0.1549]
         },
-        preview: { rotation: [-Math.PI / 2, 0, Math.PI / 2], autoRotateSpeed: 1.5 }
+        preview: { rotation: [Math.PI / 2, Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'triceratops',
@@ -96,10 +96,10 @@ export const SKINS: SharkSkin[] = [
         modelPath: '/models/ufo.glb',
         gameplay: {
             scale: 0.00411,
-            rotation: [-Math.PI / 2, 0, Math.PI / 2],
-            position: [0.1191, -0.0019, -0.0169]
+            rotation: [Math.PI / 2, Math.PI / 2, 0],
+            position: [0, -0.0019, -0.136]
         },
-        preview: { rotation: [-Math.PI / 2, 0, Math.PI / 2], autoRotateSpeed: 1.5 }
+        preview: { rotation: [Math.PI / 2, Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'robot',

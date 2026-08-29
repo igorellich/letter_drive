@@ -24,23 +24,6 @@ export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wron
   }, [fitSize, scene]);
   const effectiveScale = normalizedScale ?? scale;
 
-  // TEMP DEBUG: измеряем итоговый бокс модели (группа-локальный), исключая свайм-поворот
-  useLayoutEffect(() => {
-    if (import.meta.env.DEV) {
-      const holder = new THREE.Object3D()
-      holder.add(scene.clone(true))
-      holder.position.set(position[0], position[1], position[2])
-      holder.rotation.set(rotation[0], rotation[1], rotation[2])
-      holder.scale.setScalar(effectiveScale)
-      holder.updateMatrixWorld(true)
-      const b = new THREE.Box3().setFromObject(holder)
-      const size = new THREE.Vector3(); b.getSize(size)
-      const center = new THREE.Vector3(); b.getCenter(center)
-      const w = window as unknown as Record<string, unknown>
-      w.__skinBox = { id: modelPath, size: Array.from(size.toArray()), center: Array.from(center.toArray()), scale: effectiveScale }
-    }
-  }, [scene, rotation, scale, effectiveScale, position, modelPath])
-
   const explodeSoundRef = useRef<THREE.PositionalAudio | null>(null);
   useEffect(() => {
     if (props.wrongAnswerHandleRef) {

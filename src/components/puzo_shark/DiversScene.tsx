@@ -1,8 +1,8 @@
 import { Html, PerspectiveCamera, PositionalAudio, Stats, useGLTF } from "@react-three/drei"
-import { useFrame, useThree } from "@react-three/fiber"
+import { useFrame } from "@react-three/fiber"
 import { ControlledMesh } from "./ControlledMesh"
 import { WaterPlane } from "./waterPlane/WaterPlane"
-import { Suspense, useEffect, useRef, type ReactElement, type RefObject } from "react"
+import { Suspense, useRef, type ReactElement, type RefObject } from "react"
 import * as THREE from 'three'
 import { Shark } from "./Shark"
 
@@ -34,16 +34,6 @@ for (let i = 0; i < 15; i++) {
 const targetPositions: { [id: string]: THREE.Vector3 } = {};
 export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin = SKINS[0] }: IGameSceneProps) => {
     const sharkRef = useRef<THREE.Mesh>(null!);
-
-    // TEMP DEBUG
-    const __threeScene = useThree((s) => s.scene)
-    useEffect(() => {
-        if (import.meta.env.DEV) {
-            const w = window as unknown as Record<string, unknown>
-            w.__threeScene = __threeScene
-            w.__three = THREE
-        }
-    }, [__threeScene])
 
     useFollowingCamera({ targetRef: sharkRef })
 
@@ -175,6 +165,7 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
                     rotation={skin.gameplay.rotation}
                     scale={skin.gameplay.scale}
                     fitSize={skin.gameplay.fitSize}
+                    position={skin.gameplay.position}
                 />}
             </ControlledMesh>
 
