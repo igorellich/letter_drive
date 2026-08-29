@@ -39,9 +39,10 @@ export const pill = (gradient: string, foreground = '#fff'): CSSProperties => ({
 
 export const backChip: CSSProperties = {
   alignSelf: 'center',
-  background: 'rgba(0,210,255,0.12)', color: '#7fdfff', border: '1px solid rgba(0,210,255,0.5)',
+  background: 'rgba(0,210,255,0.15)', color: '#d6f6ff', border: '1px solid rgba(0,210,255,0.75)',
   padding: 'clamp(6px, 1.8vh, 10px) clamp(14px, 3.5vw, 24px)', borderRadius: 999,
-  cursor: 'pointer', fontWeight: 'bold', fontSize: 'clamp(0.9rem, 2.6vh, 1.05rem)'
+  cursor: 'pointer', fontWeight: 'bold', fontSize: 'clamp(0.9rem, 2.6vh, 1.05rem)',
+  textShadow: '0 1px 2px rgba(0,0,0,0.5)'
 }
 
 export const kidTitle = (color = '#00d2ff', extra: CSSProperties = {}): CSSProperties => ({

@@ -30,9 +30,9 @@ export const ProgressScale = ({ currentIndex, results }: ProgressScaleProps) => 
                 borderRadius: 999,
                 border: isCurrent ? '3px solid #00d2ff' : '1px solid rgba(255,255,255,0.2)',
                 backgroundColor:
-                    res === 'correct' ? '#4ade80' :
-                        res === 'wrong' ? '#f87171' :
-                            'rgba(255,255,255,0.15)',
+res === 'correct' ? '#4ade80' :
+                            res === 'wrong' ? '#f87171' :
+                                'rgba(255,255,255,0.3)',
                 transition: 'all 0.3s ease',
                 transform: isCurrent ? 'scale(1.25)' : 'scale(1)',
                 boxShadow: isCurrent ? '0 0 12px rgba(0,210,255,0.9)' : (res === 'correct' ? '0 0 8px rgba(74,222,128,0.7)' : (res === 'wrong' ? '0 0 8px rgba(248,113,113,0.7)' : 'none'))

@@ -33,8 +33,8 @@ export const TestEndScreen = (props:{
         <p style={{ fontSize: 'clamp(1.3rem, 4vh, 1.9rem)', color: good ? '#4ade80' : '#f87171', margin: '6px 0', fontWeight: 900 }}>
             Результат: {right} / 10
         </p>
-        <p style={{ fontSize: 'clamp(0.95rem, 2.8vh, 1.2rem)', color: 'rgba(255,255,255,0.85)', margin: '4px 0' }}>
-            {good ? `🎁 Награда: +${reward} сек дайверов!` : 'Прочитай ещё разку и попробуй снова!'}
+        <p style={{ fontSize: 'clamp(0.95rem, 2.8vh, 1.2rem)', color: 'rgba(255,255,255,0.97)', margin: '4px 0', textShadow: '0 1px 3px rgba(0,0,0,0.7)' }}>
+            {good ? `🎁 Награда: +${reward} сек дайверов!` : 'Повтори тему и попробуй ещё раз!'}
         </p>
         <button onClick={onBack} style={{
             ...pill(GRAD_TESTS),

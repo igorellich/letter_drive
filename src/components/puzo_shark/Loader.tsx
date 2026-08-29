@@ -32,7 +32,7 @@ export const Loader = () => {
                         transition: 'width 0.2s'
                     }} />
                 </div>
-                <div style={{ marginTop: '6px', fontWeight: 'bold', color: '#7fdfff' }}>{Math.round(progress)}%</div>
+                <div style={{ marginTop: '6px', fontWeight: 'bold', color: '#d6f6ff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{Math.round(progress)}%</div>
             </div>
         </Html>
     )

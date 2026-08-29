@@ -19,7 +19,7 @@ export const MainMenu = (props: {
     width: '100%',
     padding: 'clamp(10px, 2.4vh, 18px)',
     borderRadius: '22px',
-    border: '2px solid rgba(255,255,255,0.25)',
+    border: '2px solid rgba(255,255,255,0.4)',
     background: gradient,
     color: 'white',
     cursor: disabled ? 'not-allowed' : 'pointer',
@@ -57,13 +57,13 @@ export const MainMenu = (props: {
       <button onClick={onOpenTests} style={bigButtonStyle('linear-gradient(135deg, #00d2ff 0%, #0078ff 100%)', false)}>
         <span style={{ fontSize: 'clamp(1.8rem, 7vh, 2.8rem)', lineHeight: 1.15 }}>📚</span>
         <span style={{ fontSize: 'clamp(1.15rem, 3.4vh, 1.6rem)', fontWeight: 'bold' }}>Тесты</span>
-        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 0.9 }}>{testsCount} тестов · 2 класс</span>
+        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{testsCount} тестов · 2 класс</span>
       </button>
 
       <button onClick={onStartDivers} disabled={!hasDiverTime} style={bigButtonStyle('linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%)', !hasDiverTime)}>
         <span style={{ fontSize: 'clamp(1.8rem, 7vh, 2.8rem)', lineHeight: 1.15 }}>🏄</span>
         <span style={{ fontSize: 'clamp(1.15rem, 3.4vh, 1.6rem)', fontWeight: 'bold' }}>Дайверы</span>
-        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 0.9 }}>
+        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
           {hasDiverTime ? `Осталось ${fmt(diversTimeLeftSec)} · 🐟 ${diversEaten}` : 'Получи время в тестах!'}
         </span>
       </button>
@@ -71,7 +71,7 @@ export const MainMenu = (props: {
       <button onClick={onOpenSkins} style={bigButtonStyle('linear-gradient(135deg, #f472b6 0%, #a855f7 100%)', false)}>
         <span style={{ fontSize: 'clamp(1.8rem, 7vh, 2.8rem)', lineHeight: 1.15 }}>🎨</span>
         <span style={{ fontSize: 'clamp(1.15rem, 3.4vh, 1.6rem)', fontWeight: 'bold' }}>Скины</span>
-        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 0.9 }}>Смени акулу!</span>
+        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>Смени акулу!</span>
       </button>
     </div>
   )

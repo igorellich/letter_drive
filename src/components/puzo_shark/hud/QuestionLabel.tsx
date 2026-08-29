@@ -18,26 +18,28 @@ const overlayStyle: CSSProperties = {
 
 const questionCard: CSSProperties = {
     ...panelCard,
+    background: 'linear-gradient(180deg, rgba(5,36,58,0.98) 0%, rgba(1,13,22,0.99) 100%)',
     width: 'min(88vw, 560px)',
     padding: 'clamp(14px, 3.6vh, 26px) clamp(18px, 4.5vw, 32px)',
-    fontSize: 'clamp(1.15rem, 3.8vh, 1.7rem)',
-    fontWeight: 800,
+    fontSize: 'clamp(1.25rem, 4.2vh, 1.8rem)',
+    fontWeight: 900,
     lineHeight: 1.25,
     textAlign: 'center',
-    textShadow: '0 2px 6px rgba(0,0,0,0.4)'
+    color: '#ffffff',
+    textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.6)'
 }
 
 const answerButton = (fill: string, dimmed: boolean): CSSProperties => ({
     width: '100%',
     padding: 'clamp(12px, 2.6vh, 18px)',
     borderRadius: 18,
-    border: '2px solid rgba(255,255,255,0.25)',
+    border: '2px solid rgba(255,255,255,0.4)',
     background: fill,
     color: 'white',
     fontSize: 'clamp(1.05rem, 3.2vh, 1.5rem)',
-    fontWeight: 700,
+    fontWeight: 800,
     boxShadow: '0 6px 16px rgba(0,0,0,0.35)',
-    textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+    textShadow: '0 2px 4px rgba(0,0,0,0.55)',
     opacity: dimmed ? 0.45 : 1,
     cursor: 'pointer',
     transition: 'transform 0.15s'
