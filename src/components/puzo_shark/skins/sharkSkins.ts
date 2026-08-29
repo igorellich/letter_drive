@@ -1,6 +1,9 @@
+import { AppStateController } from "../food/AppStateController"
+
 export interface SharkSkin {
     id: string
     title: string
+    price: number
     modelPath: string
     gameplay: {
         scale: number
@@ -22,14 +25,15 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'classic',
         title: 'Классическая акула',
+        price: 0,
         modelPath: '/models/shark_min.glb',
         gameplay: { scale: 0.003, rotation: [Math.PI / 2, Math.PI, 0] },
-        // Превью: акула «плывёт» горизонтально боком (нос вправо), спина вверх. Нос модели в корне = +Y.
         preview: { rotation: [0, Math.PI / 2, 0], autoRotateSpeed: 1.5 }
     },
     {
         id: 'hamburger',
         title: 'Гамбургер',
+        price: 50,
         modelPath: '/models/hamburger.glb',
         gameplay: {
             scale: 0.04901,
@@ -41,6 +45,7 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'donut',
         title: 'Пончик',
+        price: 60,
         modelPath: '/models/donut.glb',
         gameplay: {
             scale: 0.06234,
@@ -52,6 +57,7 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'octopus',
         title: 'Осьминог',
+        price: 70,
         modelPath: '/models/octopus.glb',
         gameplay: {
             scale: 0.00118,
@@ -63,6 +69,7 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'whale',
         title: 'Кит',
+        price: 110,
         modelPath: '/models/whale.glb',
         gameplay: {
             scale: 0.55694,
@@ -74,6 +81,7 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'triceratops',
         title: 'Трицератопс',
+        price: 80,
         modelPath: '/models/triceratops.glb',
         gameplay: {
             scale: 0.02772,
@@ -85,6 +93,7 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'trex',
         title: 'Тираннозавр',
+        price: 90,
         modelPath: '/models/trex.glb',
         gameplay: {
             scale: 0.02011,
@@ -96,6 +105,7 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'ufo',
         title: 'Летающая тарелка',
+        price: 50,
         modelPath: '/models/ufo.glb',
         gameplay: {
             scale: 0.00147,
@@ -107,6 +117,7 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'robot',
         title: 'Робот',
+        price: 100,
         modelPath: '/models/robot.glb',
         gameplay: {
             scale: 0.09428,
@@ -118,6 +129,7 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'rocket',
         title: 'Ракета',
+        price: 120,
         modelPath: '/models/rocket.glb',
         gameplay: {
             scale: 0.46272,
@@ -129,6 +141,7 @@ export const SKINS: SharkSkin[] = [
     {
         id: 'duck',
         title: 'Резиновая уточка',
+        price: 60,
         modelPath: '/models/rubber_duck.glb',
         gameplay: {
             scale: 0.08712,
@@ -142,7 +155,8 @@ export const SKINS: SharkSkin[] = [
 export function loadSkinId(): string {
     try {
         const saved = localStorage.getItem(LOCAL_STORAGE_KEY)
-        if (saved && SKINS.some(s => s.id === saved)) return saved
+        const owned = AppStateController.getState().ownedSkins
+        if (saved && SKINS.some(s => s.id === saved) && owned.includes(saved)) return saved
     } catch { /* localStorage может быть недоступен */ }
     return SKINS[0].id
 }

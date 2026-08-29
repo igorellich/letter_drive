@@ -20,9 +20,16 @@
 
 ## Режимы и «гейт» на дайверов
 - Тесты (`Scene.tsx`): из 10 вопросов >7 правильных => `diversTimeLeftSec += 30` (60 при 10/10).
-- `AppStateController.tsx`: состояние в `localStorage['eat_steak']` = `{diversEaten, diversTimeLeftSec}`.
+- `AppStateController.tsx`: состояние в `localStorage['eat_steak']` = `{diversEaten, diversTimeLeftSec, coins, ownedSkins}` (getState мигрирует старое хранилище, по умолчанию `coins:0`, `ownedSkins:['classic']`).
 - Кнопка «Дайверы 🏄» (`main.tsx:82`) активна **только** если `diversTimeLeftSec > 0`. Свежее время можно подсеять прямо в localStorage.
 - `DiversScene.tsx`: дайверы убегают (target-пойнты + lerp), при попадании в радиус съедания (≈0.8) `diversEaten++`, дайвер телепортируется в (100,100,100) на ~1с.
+
+## Экономика (2026-08-29): монеты и покупка скинов
+- Цепочка: тест → время дайверов → ловля дайверов → монеты → покупка скинов.
+- Константы в `src/components/puzo_shark/food/economy.ts`: `COINS_PER_DIVER=1`, `TEST_TIME_REWARD_GOOD=30`, `TEST_TIME_REWARD_PERFECT=60`. Цены скинов — поле `price` в `sharkSkins.ts` (classic=0, далее 50–120).
+- Модель: ~6 тестов за 20 мин → ~3 мин ловли → ~25–30 монет/день → скин (среднее ~79) раз в ~2,5–3 дня.
+- `localStorage['eat_steak_skin']` — выбранный скин; `loadSkinId()` отдаёт сохранённый только если он в `ownedSkins`.
+- `SkinPicker.tsx`: купленные скины чип «✓», некупленные — «🪙 цена · название» (клик покупает, если хватает); `buySkin` в `main.tsx` списывает монеты и сохраняет. balance живёт в App-состоянии и в localStorage.
 
 ## Тестирование в браузере (важное)
 - `opencode-browser` (Browser MCP) нестабилен и в середине сессии может пропасть (инструменты `browsermcp_*` станут «unavailable»). Fallback: отдельный Chrome с `--remote-debugging-port=9222 --user-data-dir=<temp>`, драйвинг по CDP через Node (global WebSocket).
@@ -134,6 +141,14 @@ format: id: `scale`, `rotation`, `position`
 - [x] Камера gameplay: `useFollowingCamera` offset `[0, −1.8, 3.6]` — мягкий наклон, камера сзади-выше акулы (проверено: camera pos ~[0,−1.8,3.45], rot x≈0.464).
 - [x] `npm run build` (tsc+vite) зелёный; `npm run lint` по репо сломан pre-existing, файлы скинов при этом чистые.
 - [ ] Проверить направление «носа» каждого скина в gameplay (мир +Y при движении вперёд без отличий).
+
+## Дизайн (2026-08-30): kid-стиль для детей 1–5 классов
+- Главный экран = большое игровое меню: `hud/MainMenu.tsx` (чип монет + 3 кнопки-иконки 📚 Тесты / 🏄 Дайверы / 🎨 Скины); выбор теста отдельным экраном с кнопкой 🏠.
+- Общие токены в `hud/kidStyle.ts`: градиенты (GRAD_TESTS/DIVERS/SKINS/GOOD/RED/GOLD), `panelCard`, `coinChip`, `pill()`, `backChip`, `ANSWERS_COLORS`.
+- `QuestionLabel`: карточка вопроса + цветные варианты (палитра ANSWERS_COLORS; ✅/❌ при ответе), фикс `height: '100vw'` → `'100vh'` (в ландшафте больше не выступает за экран).
+- `TestEndScreen`: эмодзи-итог (🏆/🎉/💪) + «🎁 Награда: +N сек дайверов!», кнопка «📚 К тестам».
+- `TimerSceen`: часы «⏰ mm:ss» по центру сверху; `ProgressScale` — пилюли; `Loader` — 🦈 + градиент; `Joystick` — кольцо-подсказка и цвет #00d2ff; пикер скинов — эмодзи скинов на чипах; пауза — большие пилюли ▶ / 🏠.
+- Размеры синхронно: реальный дайвер 0.416, target-размер скина 0.624 (=1.5×), checked в браузере.
 
 ## Полезные файлы
 - `src/main.tsx` — App, `joystickData`, выбор режима, пауза/fullscreen.

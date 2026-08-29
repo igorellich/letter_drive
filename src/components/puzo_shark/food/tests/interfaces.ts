@@ -19,5 +19,7 @@ export interface IGrade {
 
 export interface IAppState{
     diversTimeLeftSec:number,
-    diversEaten: number
+    diversEaten: number,
+    coins: number,
+    ownedSkins: string[]
 }

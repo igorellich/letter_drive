@@ -1,15 +1,23 @@
 import type { IAppState } from "./tests/interfaces";
 export const AppStateController = {
     getState(): IAppState {
-        const stateStr = localStorage.getItem('eat_steak');
-        let appState: IAppState = {
+        const defaultState: IAppState = {
             diversEaten: 0,
-            diversTimeLeftSec: 0
+            diversTimeLeftSec: 0,
+            coins: 0,
+            ownedSkins: ['classic']
         }
-        if (stateStr) {
-            appState = JSON.parse(stateStr);
+        const stateStr = localStorage.getItem('eat_steak');
+        if (!stateStr) return defaultState;
+        try {
+            const parsed = JSON.parse(stateStr);
+            const appState: IAppState = { ...defaultState, ...parsed };
+            if (!Array.isArray(appState.ownedSkins)) appState.ownedSkins = [...defaultState.ownedSkins];
+            if (typeof appState.coins !== 'number' || isNaN(appState.coins)) appState.coins = defaultState.coins;
+            return appState;
+        } catch {
+            return defaultState;
         }
-        return appState;
     },
     setState(newState: IAppState) {
         localStorage.setItem('eat_steak', JSON.stringify(newState))

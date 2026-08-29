@@ -14,6 +14,7 @@ import { TestEndScreen } from "./hud/TestEndScreen"
 
 import { useFollowingCamera } from "./hooks/useFollowingCamera"
 import { AppStateController } from "./food/AppStateController"
+import { TEST_TIME_REWARD_GOOD, TEST_TIME_REWARD_PERFECT } from "./food/economy"
 import { SKINS, type SharkSkin } from "./skins/sharkSkins"
 
 interface IGameSceneProps {
@@ -44,7 +45,7 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width, skin 
             const rightAnswersNum = results.filter(r => r === 'correct').length;
             if (rightAnswersNum > 7) {
                 const appState = AppStateController.getState();
-                appState.diversTimeLeftSec += rightAnswersNum == 10 ? 60 : 30;
+                appState.diversTimeLeftSec += rightAnswersNum == 10 ? TEST_TIME_REWARD_PERFECT : TEST_TIME_REWARD_GOOD;
                 AppStateController.setState(appState);
             }
         }

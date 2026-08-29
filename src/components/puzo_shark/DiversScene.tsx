@@ -2,7 +2,7 @@ import { Html, PerspectiveCamera, PositionalAudio, Stats, useGLTF } from "@react
 import { useFrame } from "@react-three/fiber"
 import { ControlledMesh } from "./ControlledMesh"
 import { WaterPlane } from "./waterPlane/WaterPlane"
-import { Suspense, useRef, type ReactElement, type RefObject } from "react"
+import { Suspense, useRef, useState, type ReactElement, type RefObject } from "react"
 import * as THREE from 'three'
 import { Shark } from "./Shark"
 
@@ -15,7 +15,9 @@ import { useFollowingCamera } from "./hooks/useFollowingCamera"
 import { useFoodManager, type FoodItem } from "./food/FoodManager"
 import { Diver } from "./food/Diver"
 import { TimerScreen } from "./hud/TimerSceen"
+import { coinChip } from "./hud/kidStyle"
 import { AppStateController } from "./food/AppStateController"
+import { COINS_PER_DIVER } from "./food/economy"
 import type { IQuestion } from "./food/tests/interfaces"
 import { SKINS, type SharkSkin } from "./skins/sharkSkins"
 
@@ -38,6 +40,7 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
     useFollowingCamera({ targetRef: sharkRef })
 
     const eatSoundRef = useRef<THREE.PositionalAudio | null>(null);
+    const [coins, setCoins] = useState<number>(() => AppStateController.getState().coins);
     const divers: ReactElement<{ item: FoodItem, onSelectAnswer: (item: FoodItem) => void }>[] = useFoodManager({
         sharkRef,
         sceneHeight: height,
@@ -78,7 +81,9 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
                             
                             const state = AppStateController.getState();
                             state.diversEaten += 1;
+                            state.coins += COINS_PER_DIVER;
                             AppStateController.setState(state);
+                            setCoins(state.coins);
                   
 
                     setTimeout(() => {
@@ -151,6 +156,20 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
                         <Joystick joystickData={joystickData} />
                         <div style={{ position: 'absolute', width: '100%', height: '100%', fontFamily: 'sans-serif' }}>
                             <TimerScreen onTimeEnd={onBack} />
+                            <div style={{ position: 'absolute', top: 'clamp(50px, 9vh, 80px)', left: 12, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                                <div style={coinChip}>🪙 {coins}</div>
+                                <div style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                    padding: 'clamp(5px, 1.3vh, 8px) clamp(10px, 2.4vw, 16px)',
+                                    borderRadius: 999, color: 'white',
+                                    background: 'rgba(0, 15, 25, 0.6)',
+                                    border: '2px solid rgba(45,212,191,0.5)',
+                                    fontSize: 'clamp(0.85rem, 2.4vh, 1.05rem)', fontWeight: 'bold',
+                                    textShadow: '0 1px 4px rgba(0,0,0,0.6)'
+                                }}>
+                                    🐟 {AppStateController.getState().diversEaten}
+                                </div>
+                            </div>
                         </div></>}
 
                 </Html>

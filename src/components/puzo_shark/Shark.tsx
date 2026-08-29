@@ -1,8 +1,9 @@
 import { useGLTF, useAnimations, PositionalAudio } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
 import { useEffect, type RefObject, useState, Suspense, useRef, useLayoutEffect } from 'react'
 
 import * as THREE from 'three'
-import { useMeshDisintegrate } from './hooks/useMeshDisintegrate'
+import { HurtFx, type HurtFxHandle } from './HurtFx'
 
 
 
@@ -33,8 +34,6 @@ export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wron
   const { modelPath, rotation, scale, fitSize, position = [0, 0, 0] } = props;
   const { scene, animations } = useGLTF(modelPath, '/draco/');
   const { actions, names } = useAnimations(animations, scene)
-  const [exploded, setExploded] = useState<boolean>(false);
-  const explodedRef = useMeshDisintegrate(scene, { delayBeforeExplosion: 500, enabled: exploded });
 
   const [normalizedScale, setNormalizedScale] = useState<number | null>(null);
   useLayoutEffect(() => {
@@ -48,9 +47,17 @@ export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wron
   const effectiveScale = normalizedScale ?? scale;
 
   const explodeSoundRef = useRef<THREE.PositionalAudio | null>(null);
+  const hurtFxRef = useRef<HurtFxHandle | null>(null);
+  const hurtStartRef = useRef(-9999);
+  const wobRef = useRef<THREE.Group>(null);
+
   useEffect(() => {
     if (props.wrongAnswerHandleRef) {
-      props.wrongAnswerHandleRef.current = () => setExploded(true);
+      props.wrongAnswerHandleRef.current = () => {
+        hurtFxRef.current?.burst();
+        hurtStartRef.current = performance.now();
+        explodeSoundRef.current?.play();
+      };
     }
     if (names.length > 0) {
       const action = pickAnimation(actions, names)
@@ -71,32 +78,31 @@ export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wron
     })
   }, [actions, names, scene, modelPath])
 
-  useEffect(() => {
-    if (exploded) {
-      setTimeout(() => {
-        setExploded(false);
-      }, 2500)
-      if (explodeSoundRef.current) {
-        explodeSoundRef.current.play();
-      }
-    } else {
-      explodedRef.current = null;
+  useFrame(() => {
+    const g = wobRef.current
+    if (!g) return
+    const t = (performance.now() - hurtStartRef.current) / 1000
+    if (t < 0 || t >= 0.9) {
+      g.rotation.z = 0
+      g.scale.setScalar(1)
+      return
     }
-  }, [exploded])
-
+    const k = 1 - t / 0.9
+    const wob = Math.sin(t * 42) * 0.2 * k
+    const sq = Math.sin(t * 42 + Math.PI) * 0.12 * k
+    g.rotation.z = wob
+    g.scale.set(1 + sq, 1 - sq, 1)
+  })
 
   return (
 
     <group position={[0, 0, 0.45]}>
-      {exploded && explodedRef.current ? (
-        <primitive object={explodedRef.current as THREE.InstancedMesh} />
-      ) : (
-        // Transform не пишем в расшаренный gltf.scene (useGLTF-кэш общий и для превью) —
-        // накладываем его на локальную group, чтобы превью не "переворачивалось на бок" после игры.
+      <group ref={wobRef}>
         <group rotation={rotation as [number, number, number]} scale={effectiveScale} position={position}>
           <primitive object={scene} />
         </group>
-      )}
+      </group>
+      <HurtFx handleRef={hurtFxRef} />
       <Suspense>
         <PositionalAudio ref={explodeSoundRef} url="/music/boxes.ogg" distance={50} loop={false} />
       </Suspense>

@@ -12,8 +12,10 @@ import { menuButtonStyle, TestSelectionMenu } from './components/puzo_shark/hud/
 import { useAudio } from './components/puzo_shark/hooks/useAudio'
 import { DiversScene } from './components/puzo_shark/DiversScene'
 import { AppStateController } from './components/puzo_shark/food/AppStateController'
-import { SKINS, loadSkinId, saveSkinId } from './components/puzo_shark/skins/sharkSkins'
+import { SKINS, loadSkinId, saveSkinId, type SharkSkin } from './components/puzo_shark/skins/sharkSkins'
 import { SkinPicker } from './components/puzo_shark/skins/SkinPicker'
+import { MainMenu } from './components/puzo_shark/hud/MainMenu'
+import { TwoGrade } from './components/puzo_shark/food/tests/grades/2grade/2Grade'
 
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
 export const FreezeContext = createContext<(freeze:boolean)=>void>((_)=>true);
@@ -25,7 +27,23 @@ const App = () => {
   const [diversMode, setDiversMode] = useState<boolean>(false);
   const [currentSkinId, setCurrentSkinId] = useState<string>(loadSkinId);
   const [skinPickerOpen, setSkinPickerOpen] = useState<boolean>(false);
+  const [testMenuOpen, setTestMenuOpen] = useState<boolean>(false);
+  const [coins, setCoins] = useState<number>(() => AppStateController.getState().coins);
+  const [ownedSkins, setOwnedSkins] = useState<string[]>(() => AppStateController.getState().ownedSkins);
   const currentSkin = SKINS.find(s => s.id === currentSkinId) ?? SKINS[0];
+  const buySkin = (skin: SharkSkin) => {
+    if (ownedSkins.includes(skin.id) || coins < skin.price) return;
+    const newCoins = coins - skin.price;
+    const newOwned = [...ownedSkins, skin.id];
+    setCoins(newCoins);
+    setOwnedSkins(newOwned);
+    setCurrentSkinId(skin.id);
+    saveSkinId(skin.id);
+    const state = AppStateController.getState();
+    state.coins = newCoins;
+    state.ownedSkins = newOwned;
+    AppStateController.setState(state);
+  }
   // Используем наш хук. Музыка играет только если игра запущена И не на паузе.
   useAudio({
     src: '/music/main.ogg',
@@ -85,27 +103,34 @@ const App = () => {
           {!gameStarted ? (skinPickerOpen ? (
             <SkinPicker
               currentSkinId={currentSkin.id}
+              coins={coins}
+              ownedSkins={ownedSkins}
+              onBuy={buySkin}
               onPick={(id) => { saveSkinId(id); setCurrentSkinId(id); setSkinPickerOpen(false); }}
               onClose={() => setSkinPickerOpen(false)}
             />
-          ) : (<>
-            <TestSelectionMenu startGame={startGame} />
-           {<button onClick={() => diversTimeLeft > 0 && startGame(null)} style={{...menuButtonStyle, marginBottom:15}}>
-              Дайверы &#127940; {AppStateController.getState().diversEaten} съедено. {diversTimeLeft>0?`Осталось ${diversTimeLeft} секунд.`:'Проходи тесты, чтобы получить время.'}
-            </button>}
-            <button onClick={() => setSkinPickerOpen(true)} style={menuButtonStyle}>
-              Скин акулы &#127912;
-            </button>
-          </>)
+          ) : testMenuOpen ? (
+            <TestSelectionMenu startGame={startGame} onExitMenu={() => setTestMenuOpen(false)} />
+          ) : (
+            <MainMenu
+              coins={coins}
+              diversTimeLeftSec={diversTimeLeft}
+              diversEaten={AppStateController.getState().diversEaten}
+              testsCount={TwoGrade.subjects.reduce((n, s) => n + s.tests.length, 0)}
+              onOpenTests={() => setTestMenuOpen(true)}
+              onStartDivers={() => { if (diversTimeLeft > 0) startGame(null) }}
+              onOpenSkins={() => setSkinPickerOpen(true)}
+            />
+          )
           ) : (
             /* МЕНЮ ПАУЗЫ */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <h2 style={{ marginBottom: '20px' }}>ПАУЗА</h2>
-              <button onClick={() => { setPaused(false); toggleFullscreen(true); }} style={menuButtonStyle}>
-                ПРОДОЛЖИТЬ
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(10px, 2.4vh, 18px)', alignItems: 'center' }}>
+              <h2 style={{ margin: 0, color: '#00d2ff', fontSize: 'clamp(1.8rem, 6vh, 2.6rem)', textShadow: '0 0 20px rgba(0,210,255,0.5)' }}>⏸ Пауза</h2>
+              <button onClick={() => { setPaused(false); toggleFullscreen(true); }} style={{ ...menuButtonStyle, width: 'min(70vw, 320px)', borderRadius: 20 }}>
+                ▶ Продолжить
               </button>
-              <button onClick={exitToMenu} style={{ ...menuButtonStyle, background: '#ff4b4b' }}>
-                ВЫЙТИ В МЕНЮ
+              <button onClick={exitToMenu} style={{ ...menuButtonStyle, width: 'min(70vw, 320px)', borderRadius: 20, background: 'linear-gradient(135deg, #f87171 0%, #dc2626 100%)' }}>
+                🏠 Выйти в меню
               </button>
             </div>
           )}
@@ -156,8 +181,8 @@ const App = () => {
 const overlayStyle: React.CSSProperties = {
   position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
   zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center',
-  justifyContent: 'center', background: 'rgba(0, 27, 38, 0.96)', color: 'white',
-  textAlign: 'center', backdropFilter: 'blur(5px)', opacity:0.8
+  justifyContent: 'center', background: 'rgba(8, 25, 38, 0.97)', color: 'white',
+  textAlign: 'center', backdropFilter: 'blur(6px)', opacity: 1
 };
 
 const pauseIconStyle: React.CSSProperties = {
