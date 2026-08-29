@@ -43,7 +43,7 @@ export const TestSelectionMenu = (props: { startGame: (test: ITest) => void }) =
       </div>
     )}
     {currentGrade && currentSubject && (
-      <div style={{ width: '400px', display: "flex", flex: 1, overflow: 'auto', flexDirection: "column", maxWidth: '100%', wordBreak: "break-all" }}>
+      <div style={{ width: 'min(400px, 100vw)', display: "flex", flex: 1, overflow: 'auto', flexDirection: "column", wordBreak: "break-all" }}>
         <button onClick={() => setCurrentSubject(null)} style={backButtonStyle}>← К выбору предмета</button>
         <h3 style={{ margin: 0 }}>{currentGrade.title}</h3>
         <p style={{ fontSize: '0.9rem', opacity: 0.6, marginBottom: '10px', margin: 0 }}>{currentSubject.title}</p>
