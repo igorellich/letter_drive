@@ -16,6 +16,9 @@ import { SKINS, loadSkinId, saveSkinId, type SharkSkin } from './components/puzo
 import { SkinPicker } from './components/puzo_shark/skins/SkinPicker'
 import { MainMenu } from './components/puzo_shark/hud/MainMenu'
 import { TwoGrade } from './components/puzo_shark/food/tests/grades/2grade/2Grade'
+import { ThreeGrade } from './components/puzo_shark/food/tests/grades/3grade/3Grade'
+
+const ALL_GRADES = [TwoGrade, ThreeGrade];
 
 const joystickData: JoystickData = { x: 0, y: 0, active: false }
 export const FreezeContext = createContext<(freeze:boolean)=>void>((_)=>true);
@@ -116,7 +119,7 @@ const App = () => {
               coins={coins}
               diversTimeLeftSec={diversTimeLeft}
               diversEaten={AppStateController.getState().diversEaten}
-              testsCount={TwoGrade.subjects.reduce((n, s) => n + s.tests.length, 0)}
+              testsCount={ALL_GRADES.reduce((n, g) => n + g.subjects.reduce((s, subj) => s + subj.tests.length, 0), 0)}
               onOpenTests={() => setTestMenuOpen(true)}
               onStartDivers={() => { if (diversTimeLeft > 0) startGame(null) }}
               onOpenSkins={() => setSkinPickerOpen(true)}

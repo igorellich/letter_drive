@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import type { IGrade, ISubject, ITest } from "../food/tests/interfaces";
 import { TwoGrade } from '../food/tests/grades/2grade/2Grade';
+import { ThreeGrade } from '../food/tests/grades/3grade/3Grade';
 export const menuButtonStyle = {
   padding: '14px 40px', fontSize: '20px', cursor: 'pointer',
   background: '#00d2ff', color: 'white', border: 'none', borderRadius: '12px',
@@ -13,11 +14,15 @@ export const testButtonStyle = {
 };
 
 const gradeIcon: Record<string, string> = {
-  '2 класс': '👧'
+  '2 класс': '👧',
+  '3 класс': '🧒'
 };
 const subjectIcon: Record<string, string> = {
   'Математика': '🧮',
-  'Английский': '🔤'
+  'Английский': '🔤',
+  'Русский язык': '✍️',
+  'Литературное чтение': '📖',
+  'Окружающий мир': '🌍'
 };
 
 const TEST_EMOJI = ['🌟', '🚀', '🎲', '🌈', '⚡', '🏆', '🐠', '🍀', '🎯', '🎨'];
@@ -87,7 +92,7 @@ export const TestSelectionMenu = (props: { startGame: (test: ITest) => void, onE
     {!currentGrade && (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, overflow: 'auto', flexShrink: 1 }}>
         <p style={{ fontSize: 'clamp(0.95rem, 2.8vh, 1.2rem)', margin: '5px 0', fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>Выберите класс:</p>
-        {[TwoGrade].map(g => (
+        {[TwoGrade, ThreeGrade].map(g => (
           <button key={g.title} onClick={() => setCurrentGrade(g)} style={chipStyle}>
             <span style={{ fontSize: 'clamp(1.3rem, 4vh, 1.8rem)' }}>{gradeIcon[g.title] ?? '⭐'}</span>
             {g.title}

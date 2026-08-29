@@ -57,7 +57,7 @@ export const MainMenu = (props: {
       <button onClick={onOpenTests} style={bigButtonStyle('linear-gradient(135deg, #00d2ff 0%, #0078ff 100%)', false)}>
         <span style={{ fontSize: 'clamp(1.8rem, 7vh, 2.8rem)', lineHeight: 1.15 }}>📚</span>
         <span style={{ fontSize: 'clamp(1.15rem, 3.4vh, 1.6rem)', fontWeight: 'bold' }}>Тесты</span>
-        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{testsCount} тестов · 2 класс</span>
+        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{testsCount} тестов · 2–3 класс</span>
       </button>
 
       <button onClick={onStartDivers} disabled={!hasDiverTime} style={bigButtonStyle('linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%)', !hasDiverTime)}>
