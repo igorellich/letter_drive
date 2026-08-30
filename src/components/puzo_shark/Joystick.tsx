@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import nipplejs from 'nipplejs'
 
 export type JoystickData = {
@@ -7,17 +7,34 @@ export type JoystickData = {
   active: boolean
 }
 
+// Размеры джойстика подстраиваются под экран и пересчитываются при изменении
+// размера/ориентации, чтобы стик+кольцо гарантированно влезали в видимую область
+// (в т.ч. ландшафт с малой высотой и safe-area снизу).
+interface Size {
+  zone: number;  // сторона зоны (px)
+  stick: number; // диаметр стика nipplejs
+  ring: number;  // диаметр кольца-подсказки
+  center: number;
+}
+
+function computeSize(w: number, h: number): Size {
+  const safeBottom = 12; // запас под safe-area / скругления
+  const avail = Math.max(1, Math.min(w, h - safeBottom));
+  // Кольцо занимает до 0.8*zone от угла — берём запас, чтобы не вылезало за край.
+  const byRing = Math.round(avail / 0.8);
+  const zone = Math.round(Math.max(120, Math.min(220, byRing, avail * 0.55)));
+  const stick = Math.round(zone * 0.5);
+  const ring = Math.round(zone * 0.62);
+  const center = Math.round(zone / 2);
+  return { zone, stick, ring, center };
+}
+
 export const Joystick = (props: {joystickData:JoystickData}) => {
   const {joystickData} = props;
   const containerRef = useRef<HTMLDivElement>(null!)
 
-  // Размер зоны джойстика подстраивается под экран, чтобы стик+кольцо
-  // не вылезали за край (телефоны, особенно ландшафт с малой высотой).
-  const base = Math.min(window.innerWidth, window.innerHeight)
-  const zone = Math.max(120, Math.min(220, Math.round(base * 0.55)))
-  const stick = Math.round(zone * 0.55)
-  const ring = Math.round(zone * 0.68)
-  const center = Math.round(zone / 2)
+  const [size, setSize] = useState<Size>(() => computeSize(window.innerWidth, window.innerHeight));
+  const { zone, stick, ring, center } = size;
 
   const hintRing: CSSProperties = {
     position: 'absolute',
@@ -28,6 +45,16 @@ export const Joystick = (props: {joystickData:JoystickData}) => {
     border: '4px dashed rgba(0,210,255,0.45)',
     pointerEvents: 'none'
   }
+
+  useEffect(() => {
+    const onResize = () => setSize(computeSize(window.innerWidth, window.innerHeight));
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
+  }, [])
 
   useEffect(() => {
     const manager = nipplejs.create({
@@ -53,7 +80,7 @@ export const Joystick = (props: {joystickData:JoystickData}) => {
 
     return () => manager.destroy()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [center, stick])
 
   return <div ref={containerRef} style={{ pointerEvents:'auto', overflow:'hidden', position: 'absolute', bottom: 0, right: 0, width: zone + 'px', height: zone + 'px', zIndex: 1000, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
     <div style={hintRing} />

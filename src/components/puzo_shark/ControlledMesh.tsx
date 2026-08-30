@@ -4,7 +4,11 @@ import * as THREE from 'three'
 import type { JoystickData } from './Joystick'
 import { TopDownBubbleTrail } from './BubbleTrail'
 
-const MAX_POINTS = 64; 
+const MAX_POINTS = 64;
+
+// Переиспользуемые временные объекты (без аллокаций каждый кадр — иначе GC-паузы дают периодическое подтормаживание).
+const Z_AXIS = new THREE.Vector3(0, 0, 1);
+const tmpQuaternion = new THREE.Quaternion();
 
 export const ControlledMesh = (props: {
   baseSpeed: number,
@@ -82,7 +86,7 @@ export const ControlledMesh = (props: {
         moveDir.normalize();
         currentDir.lerp(moveDir, 0.35); 
         const angle = Math.atan2(currentDir.x, currentDir.y);
-        const targetQ = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -angle);
+        const targetQ = tmpQuaternion.setFromAxisAngle(Z_AXIS, -angle);
         targetQuaternion.slerp(targetQ, 0.4);
       }
 
@@ -107,7 +111,7 @@ export const ControlledMesh = (props: {
       targetPos.y += joystickData.y * joySpeed;
       
       const angle = Math.atan2(joystickData.x, joystickData.y);
-      targetQuaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -angle);
+      targetQuaternion.setFromAxisAngle(Z_AXIS, -angle);
     }
 
     isMovingRef.current = moving;
