@@ -2,7 +2,8 @@ import { Html, PerspectiveCamera, PositionalAudio, Stats, useGLTF } from "@react
 import { useFrame } from "@react-three/fiber"
 import { ControlledMesh } from "./ControlledMesh"
 import { WaterPlane } from "./waterPlane/WaterPlane"
-import { Suspense, useRef, useState, type ReactElement, type RefObject } from "react"
+import { SeaSchool } from "./waterPlane/SeaSchool"
+import { Suspense, useRef, useState, type RefObject } from "react"
 import * as THREE from 'three'
 import { Shark } from "./Shark"
 
@@ -14,6 +15,8 @@ import { Joystick, type JoystickData } from "./Joystick"
 import { useFollowingCamera } from "./hooks/useFollowingCamera"
 import { useFoodManager, type FoodItem } from "./food/FoodManager"
 import { Diver } from "./food/Diver"
+import { EatFx, type EatFxHandle } from "./food/EatFx"
+import { CameraShakeRig, type CameraShakeHandle } from "./hooks/useCameraShake"
 import { TimerScreen } from "./hud/TimerSceen"
 import { coinChip } from "./hud/kidStyle"
 import { AppStateController } from "./food/AppStateController"
@@ -40,13 +43,23 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
     useFollowingCamera({ targetRef: sharkRef })
 
     const eatSoundRef = useRef<THREE.PositionalAudio | null>(null);
+    const eatFxRef = useRef<EatFxHandle | null>(null)
+    const shakeRef = useRef<CameraShakeHandle | null>(null)
     const [coins, setCoins] = useState<number>(() => AppStateController.getState().coins);
-    const divers: ReactElement<{ item: FoodItem, onSelectAnswer: (item: FoodItem) => void }>[] = useFoodManager({
+    const onEaten = (item: FoodItem) => {
+        const p = new THREE.Vector3()
+        item.ref?.current?.getWorldPosition(p)
+        eatFxRef.current?.burstAt(p)
+        shakeRef.current?.shake(0.35, 0.06)
+        eatSoundRef.current?.play()
+    }
+    const divers = useFoodManager({
         sharkRef,
         sceneHeight: height,
         sceneWidth: width,
         FoodComponent: Diver,
-        questions: a
+        questions: a,
+        onEaten
     })
 
 
@@ -149,8 +162,9 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
         <>
             {import.meta.env.DEV && <Stats />}
             <ambientLight intensity={2} />
-            <PerspectiveCamera makeDefault position={[0, 0, 5]}>
-                <Html fullscreen style={{ pointerEvents: 'none', position: 'absolute', top: 0, left: 0 }}>
+            <CameraShakeRig handleRef={shakeRef}>
+                <PerspectiveCamera makeDefault position={[0, 0, 5]}>
+                    <Html fullscreen style={{ pointerEvents: 'none', position: 'absolute', top: 0, left: 0 }}>
 
                     {!freeze && <>
                         <Joystick joystickData={joystickData} />
@@ -173,7 +187,8 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
                         </div></>}
 
                 </Html>
-            </PerspectiveCamera>
+                </PerspectiveCamera>
+            </CameraShakeRig>
 
 
             <ControlledMesh baseSpeed={3} meshRef={sharkRef} joystickData={joystickData} sceneHeight={height} sceneWidth={width}>
@@ -194,6 +209,8 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
             <Suspense>
                 <PositionalAudio ref={eatSoundRef} url="/music/crunch.ogg" distance={50} loop={false} />
             </Suspense>
+            <EatFx handleRef={eatFxRef} />
+            <SeaSchool sceneWidth={width} sceneHeight={height} />
             <WaterPlane height={height} width={width} />
         </>
     )

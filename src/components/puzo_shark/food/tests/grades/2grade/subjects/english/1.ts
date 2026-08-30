@@ -96,7 +96,6 @@ export default {
     { "question": "Как по-английски 'Смотри на меня'?", "variants": ["Look at me", "Listen to me", "Read me"], "answer": ["Look at me"] },
     { "question": "Что такое 'TV'?", "variants": ["Радио", "Телевизор", "Телефон"], "answer": ["Телевизор"] },
     { "question": "Переведи: 'Is it a blue house?'", "variants": ["Это синий дом?", "Это большой дом?", "Это мой дом?"], "answer": ["Это синий дом?"] },
-    { "question": "Как по-английски 'Стол'?", "variants": ["Table", "Desk", "Оба варианта"], "answer": ["Оба варианта"] },
     { "question": "Что такое 'Kitchen'?", "variants": ["Кухня", "Зал", "Ванная"], "answer": ["Кухня"] },
     { "question": "Как сказать 'Где ты?'", "variants": ["Where are you?", "Who are you?", "How are you?"], "answer": ["Where are you?"] },
     { "question": "Переведи: 'In the bedroom'", "variants": ["На спальне", "В спальне", "Под спальней"], "answer": ["В спальне"] },

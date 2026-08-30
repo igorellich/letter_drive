@@ -96,6 +96,15 @@ const App = () => {
     setDiversMode(false);
     if (document.fullscreenElement) document.exitFullscreen();
   }
+  const shareGame = () => {
+    const url = location.href;
+    const text = '🦈 Попробуй «Ешь стейк!» — решай тесты, лови дайверов и собирай скины!';
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({ title: 'Ешь стейк!', text, url }).catch(() => {});
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+    }
+  };
   const diversTimeLeft = AppStateController.getState().diversTimeLeftSec;
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', background: '#001b26' }}>
@@ -119,10 +128,11 @@ const App = () => {
               coins={coins}
               diversTimeLeftSec={diversTimeLeft}
               diversEaten={AppStateController.getState().diversEaten}
-              testsCount={ALL_GRADES.reduce((n, g) => n + g.subjects.reduce((s, subj) => s + subj.tests.length, 0), 0)}
+              testsCount={ALL_GRADES.reduce((n, g) => n + g.subjects.reduce((s, subj) => s + subj.quarters.reduce((t, q) => t + q.tests.length, 0), 0), 0)}
               onOpenTests={() => setTestMenuOpen(true)}
               onStartDivers={() => { if (diversTimeLeft > 0) startGame(null) }}
               onOpenSkins={() => setSkinPickerOpen(true)}
+              onShare={shareGame}
             />
           )
           ) : (

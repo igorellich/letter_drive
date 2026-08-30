@@ -1,31 +1,44 @@
-import React, { useCallback, type ReactElement } from 'react'
+import React, { useCallback, useEffect, useRef, type ReactElement } from 'react'
 import * as THREE from 'three'
 
 import { useCollision } from './useCollision'
 import { useFoodItemsGridSpawner } from '../hooks/useFoodItemsGridSpawner'
 import type { IQuestion } from './tests/interfaces'
 
+// Лишние съедобные «приманки» сверх вопросов раунда: на поле еды больше 10,
+// но раунд заканчивается после поедания 10 (числа вопросов).
+export const BONUS_FOOD_COUNT = 4
+// Передышка в начале раунда: первые секунды можно плавать свободно,
+// вопросы/поедание не начинаются (рыбы всё равно далеко из-за сетки спауна).
+export const GRACE_MS = 3000
 
 export interface FoodItem {
   id: string
   position: THREE.Vector3
-  // Добавляем ref, чтобы коллизии видели реальное положение меша, а не стейт
   ref?: React.RefObject<THREE.Group>
   eaten?: boolean
   label: string,
   right?:boolean,
-  question:IQuestion
+  question: IQuestion | null
+}
+
+export type FoodComponentProps = {
+  item: FoodItem,
+  onSelectAnswer: (item: FoodItem) => void,
+  sharkRef: React.RefObject<THREE.Mesh>,
+  sceneWidth: number,
+  sceneHeight: number
 }
 
 interface FoodManagerProps {
   questions?: IQuestion[]
-  sharkRef: React.RefObject<THREE.Mesh>  
-  // Компонент, который будет отрисован для каждой еды
-  FoodComponent: React.ElementType<{ item: FoodItem, onSelectAnswer:(item: FoodItem)=>void }>,
+  sharkRef: React.RefObject<THREE.Mesh>
+  FoodComponent: React.ComponentType<any>,
   sceneWidth: number,
   sceneHeight: number,
-  eatenItem?:FoodItem,
-  onSelectAnswer?:(item:FoodItem)=>void
+  eatenItem?: FoodItem,
+  onSelectAnswer?: (item: FoodItem) => void,
+  onEaten?: (item: FoodItem) => void
 }
 
 
@@ -36,18 +49,30 @@ export const useFoodManager = ({
   questions,
   sceneWidth,
   sceneHeight,
-  onSelectAnswer
-}: FoodManagerProps):ReactElement<{ item: FoodItem, onSelectAnswer:(item: FoodItem)=>void }>[] => {
+  onSelectAnswer,
+  onEaten
+}: FoodManagerProps):ReactElement<any>[] => {
 
   const [foodItems, setFoodItems] = useFoodItemsGridSpawner(sharkRef, sceneWidth, sceneHeight, questions)
+  const graceUntilRef = useRef(performance.now() + GRACE_MS)
+  // Отслеживаем переход в eaten -> эффект поедания
+  useEffect(() => {
+    if (!onEaten) return
+    const freshly = foodItems.find(i => i.eaten === true && i.right !== true && i.right !== false)
+    if (freshly && freshly.ref?.current) {
+      onEaten(freshly)
+    }
+  }, [foodItems])
+
   const onEat = useCallback((id: string) => {
     if (!questions) return;
+    if (performance.now() < graceUntilRef.current) return;
     const canEat = foodItems.filter(i => i.eaten === true).length === 0
     if (canEat) {
       const eatenItem = foodItems.filter(i => i.id === id)[0];
-      if (eatenItem && eatenItem.label) {
-        eatenItem.eaten = true;        
-
+      if (eatenItem) {
+        eatenItem.eaten = true; 
+        setFoodItems(prev => prev.map(i => i.id === id ? eatenItem : i));
       }
     }
   }, [foodItems]);
@@ -62,8 +87,19 @@ export const useFoodManager = ({
       setFoodItems(prev => prev.filter(i => i.id !== item.id));
     }, 1500)
   }
+  // Съеденные «приманки» (без вопроса) убираем сами: они не дают ответ/прогресс,
+  // иначе их eaten-флаг заблокировал бы следующее поедание (canEat).
+  useEffect(() => {
+    const prizes = foodItems.filter(i => i.eaten === true && !i.question)
+    if (prizes.length) {
+      const t = setTimeout(() => {
+        setFoodItems(prev => prev.filter(i => !(i.eaten === true && !i.question)))
+      }, 800)
+      return () => clearTimeout(t)
+    }
+  }, [foodItems])
   return foodItems.map(item => (
-        <FoodComponent key={item.id} onSelectAnswer={onSelectAnswerHandler} item={item} />
+        <FoodComponent key={item.id} onSelectAnswer={onSelectAnswerHandler} item={item} sharkRef={sharkRef} sceneWidth={sceneWidth} sceneHeight={sceneHeight} />
       ))
   
 }

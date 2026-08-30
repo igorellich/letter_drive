@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import type { IGrade, ISubject, ITest } from "../food/tests/interfaces";
+import type { IGrade, ISubject, ITest, IQuarter } from "../food/tests/interfaces";
 import { TwoGrade } from '../food/tests/grades/2grade/2Grade';
 import { ThreeGrade } from '../food/tests/grades/3grade/3Grade';
 export const menuButtonStyle = {
@@ -82,6 +82,7 @@ export const TestSelectionMenu = (props: { startGame: (test: ITest) => void, onE
   const { startGame, onExitMenu } = props;
   const [currentGrade, setCurrentGrade] = useState<IGrade | null>(null)
   const [currentSubject, setCurrentSubject] = useState<ISubject | null>(null)
+  const [currentQuarter, setCurrentQuarter] = useState<IQuarter | null>(null)
   return <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 10, width: 'min(94vw, 560px)', maxHeight: '92%' }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
       <h1 style={{ color: '#00d2ff', margin: 0, fontSize: 'clamp(1.4rem, 4.5vh, 2rem)', textShadow: '0 0 20px rgba(0,210,255,0.5)' }}>📚 Выбери тест</h1>
@@ -106,22 +107,39 @@ export const TestSelectionMenu = (props: { startGame: (test: ITest) => void, onE
         <h3 style={{ margin: 0, textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>{currentGrade.title}</h3>
         <p style={{ fontSize: 'clamp(0.95rem, 2.8vh, 1.2rem)', margin: '5px', fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>Выберите предмет:</p>
         {currentGrade.subjects.map(g => (
-          <button key={g.title} onClick={() => setCurrentSubject(g)} style={chipStyle}>
+          <button key={g.title} onClick={() => { setCurrentSubject(g); setCurrentQuarter(null) }} style={chipStyle}>
             <span style={{ fontSize: 'clamp(1.3rem, 4vh, 1.8rem)' }}>{subjectIcon[g.title] ?? '⭐'}</span>
             {g.title}
           </button>
         ))}
       </div>
     )}
-    {currentGrade && currentSubject && (
-      <div style={{ width: '100%', display: 'flex', flex: 1, minHeight: 0, flexDirection: 'column', gap: 10 }}>
+    {currentGrade && currentSubject && !currentQuarter && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, overflow: 'auto', flexShrink: 1 }}>
         <button onClick={() => setCurrentSubject(null)} style={kidBack}>◀ К выбору предмета</button>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
           <h3 style={{ margin: 0, textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>{currentGrade.title}</h3>
           <span style={{ fontSize: 'clamp(0.85rem, 2.4vh, 1rem)', opacity: 0.95, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{currentSubject.title}</span>
         </div>
-        <div key={currentSubject.title} style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '4px 6px 16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 235px), 1fr))', gap: 12, alignContent: 'start' }}>
-          {currentSubject.tests.map((t, i) => (
+        <p style={{ fontSize: 'clamp(0.95rem, 2.8vh, 1.2rem)', margin: '5px', fontWeight: 700, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>Выберите четверть:</p>
+        {currentSubject.quarters.map((q, i) => (
+          <button key={q.title} onClick={() => setCurrentQuarter(q)} style={chipStyle}>
+            <span style={{ fontSize: 'clamp(1.3rem, 4vh, 1.8rem)' }}>{['📗', '📘', '📙', '📕'][i % 4]}</span>
+            {q.title}
+            <span style={{ fontSize: '0.8em', opacity: 0.95 }}>{q.tests.length} тем</span>
+          </button>
+        ))}
+      </div>
+    )}
+    {currentGrade && currentSubject && currentQuarter && (
+      <div style={{ width: '100%', display: 'flex', flex: 1, minHeight: 0, flexDirection: 'column', gap: 10 }}>
+        <button onClick={() => setCurrentQuarter(null)} style={kidBack}>◀ К выбору четверти</button>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+          <h3 style={{ margin: 0, textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>{currentGrade.title}</h3>
+          <span style={{ fontSize: 'clamp(0.85rem, 2.4vh, 1rem)', opacity: 0.95, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{currentSubject.title} · {currentQuarter.title}</span>
+        </div>
+        <div key={currentQuarter.title} style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '4px 6px 16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 235px), 1fr))', gap: 12, alignContent: 'start' }}>
+          {currentQuarter.tests.map((t, i) => (
             <button key={t.title + i} onClick={() => startGame(t)} style={{ ...testCard, background: CARD_BGS[i % CARD_BGS.length] }}>
               <span style={{ fontSize: 'clamp(1.4rem, 4.5vh, 2rem)' }}>{TEST_EMOJI[i % TEST_EMOJI.length]}</span>
               <span style={{ flex: 1 }}>{t.title}</span>

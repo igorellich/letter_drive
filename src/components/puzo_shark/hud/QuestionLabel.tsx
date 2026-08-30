@@ -1,5 +1,6 @@
 import { Html } from "@react-three/drei";
 import type { FoodItem } from "../food/FoodManager"
+import type { IQuestion } from "../food/tests/interfaces"
 import { useEffect, useState, type CSSProperties } from "react";
 import { ANSWERS_COLORS, GRAD_GOOD, GRAD_RED, panelCard } from "./kidStyle";
 
@@ -45,7 +46,7 @@ const answerButton = (fill: string, dimmed: boolean): CSSProperties => ({
     transition: 'transform 0.15s'
 })
 
-export const QuestionLabel = (props: { foodItem: FoodItem, onSelectAnswer: (item: FoodItem) => void }) => {
+export const QuestionLabel = (props: { foodItem: FoodItem & { question: IQuestion }, onSelectAnswer: (item: FoodItem) => void, onGraded?: (correct: boolean) => void }) => {
     const [givenAnswer, setGivenAnswer] = useState<string | null>(null);
     const onSelectAnswer = (answer: string) => {
         setGivenAnswer(answer);
@@ -55,6 +56,7 @@ export const QuestionLabel = (props: { foodItem: FoodItem, onSelectAnswer: (item
             const correct = props.foodItem.question.answer.includes(givenAnswer);
 
             props.foodItem.right = correct;
+            props.onGraded?.(correct);
             setTimeout(() => {
                 props.onSelectAnswer(props.foodItem)
             }, 1000)

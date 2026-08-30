@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import type { IQuestion } from "../food/tests/interfaces";
 import React from "react";
 import type { FoodItem } from "../food/FoodManager";
+import { BONUS_FOOD_COUNT } from "../food/FoodManager";
 // Константы сетки
 const GRID_X = 38;
 const GRID_Y = 18;
@@ -61,21 +62,30 @@ export const useFoodItemsGridSpawner = (controlledMeshRef: RefObject<THREE.Mesh>
 
     useEffect(() => {
         if (questions && questions.length > 0) {
-            const positions = generateGridPositions(questions.length);
+            const total = questions.length + BONUS_FOOD_COUNT;
+            const positions = generateGridPositions(total);
             const newItems: FoodItem[] = [];
-            let index = 0;
-            for (const question of questions) {
-                if (question) {
-                    newItems.push({
-                        id: `${question.question}`,
-                        label: question.question,
-                        position: positions[index] || new THREE.Vector3(0, 0, -10),
-                        ref: React.createRef() as React.RefObject<THREE.Group>,
-                        eaten: false,
-                        question
-                    })
-                }
-                index++;
+            for (let index = 0; index < questions.length; index++) {
+                const question = questions[index];
+                if (!question) continue;
+                newItems.push({
+                    id: `${question.question}`,
+                    label: question.question,
+                    position: positions[index] || new THREE.Vector3(0, 0, -10),
+                    ref: React.createRef() as React.RefObject<THREE.Group>,
+                    eaten: false,
+                    question
+                })
+            }
+            for (let b = questions.length; b < total; b++) {
+                newItems.push({
+                    id: `bonus-${b}`,
+                    label: '',
+                    position: positions[b] || new THREE.Vector3(0, 0, -10),
+                    ref: React.createRef() as React.RefObject<THREE.Group>,
+                    eaten: false,
+                    question: null
+                })
             }
             setFoodItems(newItems);
         }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { IGrade, ITest, ISubject } from './interfaces';
+import type { IGrade, ITest, ISubject, IQuarter } from './interfaces';
 
 interface Props {
   data: IGrade[];
@@ -9,11 +9,13 @@ interface Props {
 const TestSelector: React.FC<Props> = ({ data, onSelectTest }) => {
   const [selectedGrade, setSelectedGrade] = useState<IGrade | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<ISubject | null>(null);
+  const [selectedQuarter, setSelectedQuarter] = useState<IQuarter | null>(null);
 
   // Сброс при смене уровня
   const handleGradeSelect = (grade: IGrade) => {
     setSelectedGrade(grade);
     setSelectedSubject(null);
+    setSelectedQuarter(null);
   };
 
   return (
@@ -40,7 +42,7 @@ const TestSelector: React.FC<Props> = ({ data, onSelectTest }) => {
           {selectedGrade.subjects.map((subject) => (
             <button 
               key={subject.title}
-              onClick={() => setSelectedSubject(subject)}
+              onClick={() => { setSelectedSubject(subject); setSelectedQuarter(null); }}
               style={{ marginRight: '10px', background: selectedSubject?.title === subject.title ? '#e0e0e0' : '#fff' }}
             >
               {subject.title}
@@ -49,12 +51,28 @@ const TestSelector: React.FC<Props> = ({ data, onSelectTest }) => {
         </div>
       )}
 
-      {/* Выбор Теста */}
+      {/* Выбор Четверти */}
       {selectedSubject && (
+        <div style={{ marginBottom: '15px' }}>
+          <h4>Четверти:</h4>
+          {selectedSubject.quarters.map((q) => (
+            <button 
+              key={q.title}
+              onClick={() => setSelectedQuarter(q)}
+              style={{ marginRight: '10px', background: selectedQuarter?.title === q.title ? '#e0e0e0' : '#fff' }}
+            >
+              {q.title}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Выбор Темы */}
+      {selectedQuarter && (
         <div>
-          <h4>Доступные тесты:</h4>
+          <h4>Доступные темы:</h4>
           <ul>
-            {selectedSubject.tests.map((test) => (
+            {selectedQuarter.tests.map((test) => (
               <li key={test.title} style={{ marginBottom: '5px' }}>
                 {test.title} 
                 <button 

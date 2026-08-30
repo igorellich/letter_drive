@@ -11,18 +11,26 @@ import Module10 from './10';
 import Module11 from './11';
 import Module12 from './12';
 import Module13 from './13';
+import Simple from './simple';
+
 export const twoMath: ISubject = {
     title: "Математика",
-    tests: [Sravnenie30,
-        Module3,
-        Module4,
-        Module5,
-        Module6,
-        Module7,
-        Module8,
-        Module9,
-        Module10,
-        Module11,
-        Module12,
-        Module13]
+    quarters: [
+        {
+            title: "1 четверть · Числа до 100, сложение и вычитание без перехода",
+            tests: [Sravnenie30, Module3, Module4]
+        },
+        {
+            title: "2 четверть · Сложение и вычитание с переходом через разряд",
+            tests: [Module5, Module6, Module7, Module8]
+        },
+        {
+            title: "3 четверть · Сравнение и поверка вычислений",
+            tests: [Module9, Simple, Module10, Module11, Module12]
+        },
+        {
+            title: "4 четверть · Повторение и итоговые примеры",
+            tests: [Module13]
+        }
+    ]
 }

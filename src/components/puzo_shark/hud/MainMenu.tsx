@@ -8,8 +8,9 @@ export const MainMenu = (props: {
   onOpenTests: () => void
   onStartDivers: () => void
   onOpenSkins: () => void
+  onShare: () => void
 }) => {
-  const { coins, diversTimeLeftSec, diversEaten, testsCount, onOpenTests, onStartDivers, onOpenSkins } = props
+  const { coins, diversTimeLeftSec, diversEaten, testsCount, onOpenTests, onStartDivers, onOpenSkins, onShare } = props
   const hasDiverTime = diversTimeLeftSec > 0
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
@@ -43,7 +44,8 @@ export const MainMenu = (props: {
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       gap: 'clamp(8px, 2vh, 16px)',
-      width: 'min(92vw, 420px)'
+      width: 'min(92vw, 420px)',
+      maxHeight: '100%', overflowY: 'auto'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
         <h1 style={{
@@ -72,6 +74,12 @@ export const MainMenu = (props: {
         <span style={{ fontSize: 'clamp(1.8rem, 7vh, 2.8rem)', lineHeight: 1.15 }}>🎨</span>
         <span style={{ fontSize: 'clamp(1.15rem, 3.4vh, 1.6rem)', fontWeight: 'bold' }}>Скины</span>
         <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>Смени акулу!</span>
+      </button>
+
+      <button onClick={onShare} style={bigButtonStyle('linear-gradient(135deg, #34d399 0%, #059669 100%)', false)}>
+        <span style={{ fontSize: 'clamp(1.8rem, 7vh, 2.8rem)', lineHeight: 1.15 }}>📤</span>
+        <span style={{ fontSize: 'clamp(1.15rem, 3.4vh, 1.6rem)', fontWeight: 'bold' }}>Поделиться</span>
+        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>Отправь друзьям ссылку!</span>
       </button>
     </div>
   )

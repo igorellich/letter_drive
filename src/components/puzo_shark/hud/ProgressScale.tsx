@@ -11,14 +11,14 @@ export const ProgressScale = ({ currentIndex, results }: ProgressScaleProps) => 
         ...panelCard,
         position: 'absolute',
         right: 'clamp(8px, 1.5vw, 16px)',
-        top: '50%',
-        transform: 'translateY(-50%)',
+        top: 'clamp(60px, 11vh, 96px)',
         display: 'flex',
-        flexDirection: 'column-reverse', // Чтобы 1-й вопрос был снизу или сверху (по вкусу)
+        flexDirection: 'column-reverse',
         gap: 'clamp(6px, 1.5vh, 10px)',
         padding: 'clamp(10px, 2.4vh, 16px)',
         borderRadius: 999,
-        height: '70%',
+        height: '52%',
+        maxHeight: '56vh',
         border: '2px solid rgba(0,210,255,0.3)'
     }
     return <div style={container}>

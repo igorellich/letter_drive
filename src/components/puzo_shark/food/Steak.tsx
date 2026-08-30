@@ -121,7 +121,10 @@ export const Steak: React.ComponentType<{ item: FoodItem, onSelectAnswer:(item: 
       )}
 
       {/* Текст вопроса сверху */}
-      {showQuestion && <QuestionLabel onSelectAnswer={afterAnswer} foodItem={item} />}
+      {showQuestion && (() => {
+        const q = item.question
+        return q ? <QuestionLabel onSelectAnswer={afterAnswer} foodItem={{ ...item, question: q }} /> : null
+      })()}
       <Suspense>
         <PositionalAudio ref={brokenBoxSoundRef} url="/music/crunch.ogg" distance={50} loop={false}/>
       </Suspense>

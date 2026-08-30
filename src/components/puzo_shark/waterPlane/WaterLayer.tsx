@@ -10,10 +10,13 @@ export const WaterLayer = (props:{ position: [x: number, y: number, z: number], 
   // Клонируем униформы, чтобы слои были независимы
   const layerUniforms = useMemo(() => ({
     uTime: { value: 0 },
-    uDepthColor: { value: new THREE.Color('#007da1') },
-    uSurfaceColor: { value: new THREE.Color('#7df9ff') },
+    uDepthColor: { value: new THREE.Color('#00496b') },
+    uSurfaceColor: { value: new THREE.Color('#31d7ff') },
+    uGlowColor: { value: new THREE.Color('#7df9ff') },
     uScale: { value: (width+height)/2 },
-    uOpacity: { value: opacity }
+    uOpacity: { value: opacity },
+    uWaveHeight: { value: 0.18 },
+    uRippleDensity: { value: 5.0 }
   }), [zoom, opacity])
 
   useFrame((state) => {
