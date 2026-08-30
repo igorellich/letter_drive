@@ -42,7 +42,7 @@ function useShout() {
       if (!alive) return
       setPulse(p => p + 1)
       setShout(SHOUTS[Math.floor(Math.random() * SHOUTS.length)])
-      timer = setTimeout(hide, 850 + Math.random() * 650)
+      timer = setTimeout(hide, 2300 + Math.random() * 600)
     }
 
     timer = setTimeout(show, 800 + Math.random() * 2000)

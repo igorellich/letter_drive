@@ -20,7 +20,7 @@ import { ThreeGrade } from './components/puzo_shark/food/tests/grades/3grade/3Gr
 
 const ALL_GRADES = [TwoGrade, ThreeGrade];
 
-const joystickData: JoystickData = { x: 0, y: 0, active: false }
+const joystickData: JoystickData = { x: 0, y: 0, active: false };
 export const FreezeContext = createContext<(freeze:boolean)=>void>((_)=>true);
 const App = () => {
   const [gameStarted, setGameStarted] = useState(false)
@@ -94,6 +94,10 @@ const App = () => {
     setSelectedTest(null);
     setPaused(true);
     setDiversMode(false);
+    // Перечитываем локальное состояние (монеты, скины), т.к. из сцены оно могло измениться
+    const s = AppStateController.getState();
+    setCoins(s.coins);
+    setOwnedSkins(s.ownedSkins);
     if (document.fullscreenElement) document.exitFullscreen();
   }
   const shareGame = () => {
