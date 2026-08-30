@@ -1,8 +1,14 @@
-import { Html, useProgress } from "@react-three/drei" // Добавили useProgress
+import { Html } from "@react-three/drei"
 import { GRAD_TESTS, panelCard } from "./hud/kidStyle"
 
+// ВАЖНО: этот компонент — Suspense-fallback, монтируется ВНУТРИ Canvas, пока
+// сцена грузит модели 3D. Нельзя использовать drei useProgress() прямо здесь:
+// он вызывает set() на zustand-сторе из callbacks DefaultLoadingManager (onStart/
+// onProgress), которые срабатывают синхронно ВО ВРЕМЯ render (cold load модели),
+// и React 19 падает с «Cannot update a component while rendering a different
+// component», размонтируя всё дерево -> белый экран при входе в тест.
+// Поэтому здесь только статичная панель с CSS-анимацией (без подписки на прогресс).
 export const Loader = () => {
-    const { progress } = useProgress()
     return (
         <Html center>
             <div style={{
@@ -25,14 +31,13 @@ export const Loader = () => {
                     overflow: 'hidden'
                 }}>
                     <div style={{
-                        width: `${progress}%`,
+                        width: '40%',
                         height: '100%',
                         background: GRAD_TESTS,
                         borderRadius: 999,
-                        transition: 'width 0.2s'
+                        animation: 'ldr-slide 1.2s ease-in-out infinite'
                     }} />
                 </div>
-                <div style={{ marginTop: '6px', fontWeight: 'bold', color: '#d6f6ff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{Math.round(progress)}%</div>
             </div>
         </Html>
     )

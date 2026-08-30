@@ -26,10 +26,16 @@
 
 ## Экономика (2026-08-29): монеты и покупка скинов
 - Цепочка: тест → время дайверов → ловля дайверов → монеты → покупка скинов.
-- Константы в `src/components/puzo_shark/food/economy.ts`: `COINS_PER_DIVER=1`, `TEST_TIME_REWARD_GOOD=30`, `TEST_TIME_REWARD_PERFECT=60`. Цены скинов — поле `price` в `sharkSkins.ts` (classic=0, далее 50–120).
+- Константы в `src/components/puzo_shark/food/economy.ts`: `COINS_PER_DIVER=1`, `TEST_TIME_REWARD_GOOD=30`, `TEST_TIME_REWARD_PERFECT=60`, `BONUS_TIME_REWARD=5` (награда за съеденную рыбку-«приманку» без вопроса). Цены скинов — поле `price` в `sharkSkins.ts` (classic=0, далее 50–120).
 - Модель: ~6 тестов за 20 мин → ~3 мин ловли → ~25–30 монет/день → скин (среднее ~79) раз в ~2,5–3 дня.
 - `localStorage['eat_steak_skin']` — выбранный скин; `loadSkinId()` отдаёт сохранённый только если он в `ownedSkins`.
 - `SkinPicker.tsx`: купленные скины чип «✓», некупленные — «🪙 цена · название» (клик покупает, если хватает); `buySkin` в `main.tsx` списывает монеты и сохраняет. balance живёт в App-состоянии и в localStorage.
+
+## Известные фиксы (2026-08-30)
+- **Белый экран при входе в тест** (React 19): `Loader.tsx` — Fallback Suspense внутри Canvas. Раньше использовал drei `useProgress()` (zustand-подписка через DefaultLoadingManager), который синхронно вызывал `set()` во время render на cold-load моделей → «Cannot update a component (Loader) while rendering a different component». Теперь статичная панель с CSS `ldr-slide`, без подписки на прогресс.
+- **Сериализация поедания**: `FoodManager.tsx` `canEat` раньше был `eaten.length===0` — съеденная и уже отвеченная рыбка блокировала поедание, создавая «мёртвую зону» ~1.5с. Теперь `!foodItems.some(i => i.eaten && i.right!==true && i.right!==false)` (блокирует только НЕотвеченный вопрос).
+- **Бонус-рыбка** (без вопроса, 4 шт/раунд): даёт +5 сек дайверам (`BONUS_TIME_REWARD`); награда показывается тостом `hud/RewardToast.tsx` («+5 сек! ⏰»), самопропадает ~1.6с. Грант в `Scene.tsx onEaten` через AppStateController.
+- **Дубликаты id рыбок**: `useFoodItemsGridSpawner.ts` id = `${question}__${index}` — иначе совпадающие тексты вопросов ломали `onEat` find/React keys.
 
 ## Тестирование в браузере (важное)
 - `opencode-browser` (Browser MCP) нестабилен и в середине сессии может пропасть (инструменты `browsermcp_*` станут «unavailable»). Fallback: отдельный Chrome с `--remote-debugging-port=9222 --user-data-dir=<temp>`, драйвинг по CDP через Node (global WebSocket).

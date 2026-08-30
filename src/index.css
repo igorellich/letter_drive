@@ -8,6 +8,17 @@ canvas {
   height: 100vh;
   height: 100dvh;
 }
+@keyframes ldr-slide {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(250%); }
+}
+@keyframes toast-pop {
+  0% { transform: translateY(20px) scale(0.6); opacity: 0; }
+  15% { transform: translateY(0) scale(1.1); opacity: 1; }
+  30% { transform: translateY(-4px) scale(1); opacity: 1; }
+  80% { transform: translateY(-18px) scale(1); opacity: 1; }
+  100% { transform: translateY(-30px) scale(0.9); opacity: 0; }
+}
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

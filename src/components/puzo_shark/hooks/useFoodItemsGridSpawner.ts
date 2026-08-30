@@ -69,7 +69,7 @@ export const useFoodItemsGridSpawner = (controlledMeshRef: RefObject<THREE.Mesh>
                 const question = questions[index];
                 if (!question) continue;
                 newItems.push({
-                    id: `${question.question}`,
+                    id: `${question.question}__${index}`,
                     label: question.question,
                     position: positions[index] || new THREE.Vector3(0, 0, -10),
                     ref: React.createRef() as React.RefObject<THREE.Group>,

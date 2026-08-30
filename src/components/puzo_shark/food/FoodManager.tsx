@@ -67,7 +67,11 @@ export const useFoodManager = ({
   const onEat = useCallback((id: string) => {
     if (!questions) return;
     if (performance.now() < graceUntilRef.current) return;
-    const canEat = foodItems.filter(i => i.eaten === true).length === 0
+    // Нельзя съесть новую рыбку, пока открыт НЕотвеченный вопрос: иначе
+    // наложатся два вопроса разом. Съеденная и УЖЕ отвеченная рыбка (right
+    // установлен) не блокирует: её всё равно скоро уберут, и не должно быть
+    // «мёртвой зоны» ~1.5 с, когда акула проплывает сквозь рыбок без поедания.
+    const canEat = !foodItems.some(i => i.eaten === true && i.right !== true && i.right !== false)
     if (canEat) {
       const eatenItem = foodItems.filter(i => i.id === id)[0];
       if (eatenItem) {

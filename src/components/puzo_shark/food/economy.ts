@@ -5,3 +5,5 @@
 export const COINS_PER_DIVER = 1
 export const TEST_TIME_REWARD_GOOD = 30
 export const TEST_TIME_REWARD_PERFECT = 60
+// Награда за съеденную «приманку» (рыбку без вопроса) — время для дайверов.
+export const BONUS_TIME_REWARD = 5

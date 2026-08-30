@@ -14,10 +14,11 @@ import type { ITest } from "./food/tests/interfaces"
 import { Joystick, type JoystickData } from "./Joystick"
 import { ProgressScale, type AnswerResult } from "./hud/ProgressScale"
 import { TestEndScreen } from "./hud/TestEndScreen"
+import { RewardToast, type Reward } from "./hud/RewardToast"
 
 import { useFollowingCamera } from "./hooks/useFollowingCamera"
 import { AppStateController } from "./food/AppStateController"
-import { TEST_TIME_REWARD_GOOD, TEST_TIME_REWARD_PERFECT } from "./food/economy"
+import { TEST_TIME_REWARD_GOOD, TEST_TIME_REWARD_PERFECT, BONUS_TIME_REWARD } from "./food/economy"
 import { SKINS, type SharkSkin } from "./skins/sharkSkins"
 
 interface IGameSceneProps {
@@ -41,6 +42,8 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width, skin 
     const [results, setResults] = useState<AnswerResult[]>(new Array(10).fill('pending'));
     const eatSoundRef = useRef<THREE.PositionalAudio | null>(null);
     const [finished, setFinished] = useState<boolean>(false)
+    const [rewards, setRewards] = useState<Reward[]>([])
+    const rewardIdRef = useRef(0)
     
     useEffect(()=>{
         setFinished(sessionIndexes.length > 0 && currentIndex >= sessionIndexes.length);
@@ -93,6 +96,15 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width, skin 
         eatFxRef.current?.burstAt(p)
         shakeRef.current?.shake(0.35, 0.06)
         eatSoundRef.current?.play()
+        // Рыбка-«приманка» (без вопроса) даёт награду временем для дайверов.
+        // Показываем заметный тост, чтобы награду было видно.
+        if (!item.question) {
+            const appState = AppStateController.getState();
+            appState.diversTimeLeftSec += BONUS_TIME_REWARD;
+            AppStateController.setState(appState);
+            const id = ++rewardIdRef.current;
+            setRewards(prev => [...prev, { id, amount: BONUS_TIME_REWARD }]);
+        }
     }
     const foodComponents = useFoodManager({
         questions: selectedQuestions,
@@ -117,6 +129,7 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width, skin 
 
 
                             <ProgressScale currentIndex={currentIndex} results={results} />
+                            <RewardToast rewards={rewards} onDone={(id) => setRewards(prev => prev.filter(r => r.id !== id))} />
 
                             {/* ЭКРАН ЗАВЕРШЕНИЯ */}
                             {finished && <TestEndScreen onBack={onBack} results={results} />}
