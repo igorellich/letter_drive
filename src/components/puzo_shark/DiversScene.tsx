@@ -13,6 +13,7 @@ import { Joystick, type JoystickData } from "./Joystick"
 
 
 import { useFollowingCamera } from "./hooks/useFollowingCamera"
+import { usePositionalMute } from "./hooks/usePositionalMute"
 import { useFoodManager } from "./food/FoodManager"
 import { Diver } from "./food/Diver"
 import { EatFx, type EatFxHandle } from "./food/EatFx"
@@ -44,6 +45,7 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
     useFollowingCamera({ targetRef: sharkRef })
 
     const eatSoundRef = useRef<THREE.PositionalAudio | null>(null);
+    usePositionalMute(eatSoundRef);
     const eatFxRef = useRef<EatFxHandle | null>(null)
     const eatParticlesRef = useRef<DiverEatParticlesHandle | null>(null)
     const shakeRef = useRef<CameraShakeHandle | null>(null)

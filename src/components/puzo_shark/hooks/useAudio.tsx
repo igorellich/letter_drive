@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { soundBus } from './soundBus';
 
 interface UseAudioOptions {
   src: string;
@@ -33,6 +34,14 @@ export const useAudio = ({ src, paused, autoRepeat = true, volume = 0.5 }: UseAu
       audioRef.current.pause();
     }
   }, [paused]);
+
+  // Глобальный мьют (кнопка звука): применяем muted к созданному <audio>.
+  useEffect(() => {
+    const unsub = soundBus.subscribe((m) => {
+      if (audioRef.current) audioRef.current.muted = m;
+    });
+    return unsub;
+  }, []);
 
   return audioRef;
 };

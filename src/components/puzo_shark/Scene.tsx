@@ -17,6 +17,7 @@ import { TestEndScreen } from "./hud/TestEndScreen"
 import { RewardToast, type Reward } from "./hud/RewardToast"
 
 import { useFollowingCamera } from "./hooks/useFollowingCamera"
+import { usePositionalMute } from "./hooks/usePositionalMute"
 import { AppStateController } from "./food/AppStateController"
 import { TEST_TIME_REWARD_GOOD, TEST_TIME_REWARD_PERFECT, BONUS_TIME_REWARD } from "./food/economy"
 import { SKINS, type SharkSkin } from "./skins/sharkSkins"
@@ -41,6 +42,7 @@ export const Scene = ({ test, joystickData, onBack, freeze, height, width, skin 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [results, setResults] = useState<AnswerResult[]>(new Array(10).fill('pending'));
     const eatSoundRef = useRef<THREE.PositionalAudio | null>(null);
+    usePositionalMute(eatSoundRef);
     const [finished, setFinished] = useState<boolean>(false)
     const [rewards, setRewards] = useState<Reward[]>([])
     const rewardIdRef = useRef(0)

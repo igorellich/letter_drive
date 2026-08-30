@@ -1,4 +1,15 @@
 import type { CSSProperties } from "react"
+import { SoundToggle } from "./SoundToggle"
+
+// Русское склонение: 1 тест, 2–4 теста, 5–20 тестов.
+function plural(n: number, one: string, few: string, many: string): string {
+  const abs = Math.abs(n) % 100
+  const d = abs % 10
+  if (abs > 10 && abs < 20) return many
+  if (d === 1) return one
+  if (d >= 2 && d <= 4) return few
+  return many
+}
 
 export const MainMenu = (props: {
   coins: number
@@ -53,13 +64,16 @@ export const MainMenu = (props: {
           fontSize: 'clamp(1.6rem, 5vh, 2.4rem)',
           textShadow: '0 0 20px rgba(0,210,255,0.5)'
         }}>🦈 Дай стейк!</h1>
-        <div style={coinChip}>🪙 {coins}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={coinChip}>🪙 {coins}</div>
+          <SoundToggle />
+        </div>
       </div>
 
       <button onClick={onOpenTests} style={bigButtonStyle('linear-gradient(135deg, #00d2ff 0%, #0078ff 100%)', false)}>
         <span style={{ fontSize: 'clamp(1.8rem, 7vh, 2.8rem)', lineHeight: 1.15 }}>📚</span>
         <span style={{ fontSize: 'clamp(1.15rem, 3.4vh, 1.6rem)', fontWeight: 'bold' }}>Тесты</span>
-        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{testsCount} тестов · 2–3 класс</span>
+        <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>{testsCount} {plural(testsCount, 'тест', 'теста', 'тестов')} · 2–3 класс</span>
       </button>
 
       <button onClick={onStartDivers} disabled={!hasDiverTime} style={bigButtonStyle('linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%)', !hasDiverTime)}>

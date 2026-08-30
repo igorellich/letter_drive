@@ -15,6 +15,7 @@ import { AppStateController } from './components/puzo_shark/food/AppStateControl
 import { SKINS, loadSkinId, saveSkinId, type SharkSkin } from './components/puzo_shark/skins/sharkSkins'
 import { SkinPicker } from './components/puzo_shark/skins/SkinPicker'
 import { MainMenu } from './components/puzo_shark/hud/MainMenu'
+import { SoundToggle } from './components/puzo_shark/hud/SoundToggle'
 import { TwoGrade } from './components/puzo_shark/food/tests/grades/2grade/2Grade'
 import { ThreeGrade } from './components/puzo_shark/food/tests/grades/3grade/3Grade'
 
@@ -149,6 +150,7 @@ const App = () => {
               <button onClick={exitToMenu} style={{ ...menuButtonStyle, width: 'min(70vw, 320px)', borderRadius: 20, background: 'linear-gradient(135deg, #f87171 0%, #dc2626 100%)' }}>
                 🏠 Выйти в меню
               </button>
+              <SoundToggle style={{ marginTop: 4 }} />
             </div>
           )}
         </div>

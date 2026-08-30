@@ -5,6 +5,7 @@ import * as THREE from "three"
 import type { FoodItem } from "./FoodManager"
 import { QuestionLabel } from "../hud/QuestionLabel"
 import { FreezeContext } from "../../../main"
+import { usePositionalMute } from "../hooks/usePositionalMute"
 
 export const Steak: React.ComponentType<{ item: FoodItem, onSelectAnswer:(item: FoodItem)=>void }> = (props: { item: FoodItem, onSelectAnswer:(item: FoodItem)=>void }) => {
   const { item, onSelectAnswer } = props
@@ -22,6 +23,7 @@ export const Steak: React.ComponentType<{ item: FoodItem, onSelectAnswer:(item: 
 
   const [showQuestion, setShowQuestion] = useState<boolean>(false);
   const brokenBoxSoundRef = useRef<THREE.PositionalAudio|null>(null);
+  usePositionalMute(brokenBoxSoundRef);
   // Генерируем 30 мелких точек
   const count = 100
   const [positions, velocities] = useMemo(() => {

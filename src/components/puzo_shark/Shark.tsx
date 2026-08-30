@@ -4,6 +4,7 @@ import { useEffect, type RefObject, useState, Suspense, useRef, useLayoutEffect 
 
 import * as THREE from 'three'
 import { HurtFx, type HurtFxHandle } from './HurtFx'
+import { usePositionalMute } from './hooks/usePositionalMute'
 
 
 
@@ -47,6 +48,7 @@ export const Shark = (props: { actionRef: RefObject<THREE.AnimationAction>, wron
   const effectiveScale = normalizedScale ?? scale;
 
   const explodeSoundRef = useRef<THREE.PositionalAudio | null>(null);
+  usePositionalMute(explodeSoundRef);
   const hurtFxRef = useRef<HurtFxHandle | null>(null);
   const hurtStartRef = useRef(-9999);
   const wobRef = useRef<THREE.Group>(null);
