@@ -2,6 +2,12 @@ canvas {
   touch-action: none; /* Это самое важное: отключает зум и скролл на канвасе */
   user-select: none;
 }
+.app-root {
+  /* dvh = реально видимая высота на мобильных (без браузерной панели),
+     чтобы нижний HUD (джойстик) не уходил под край экрана */
+  height: 100vh;
+  height: 100dvh;
+}
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

@@ -107,7 +107,7 @@ const App = () => {
   };
   const diversTimeLeft = AppStateController.getState().diversTimeLeftSec;
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', background: '#001b26' }}>
+    <div className="app-root" style={{ width: '100vw', position: 'relative', overflow: 'hidden', background: '#001b26' }}>
 
       {/* Overlay: Меню и Пауза */}
       {paused && (
