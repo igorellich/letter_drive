@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from 'react'
 import { SKINS, type SharkSkin } from './sharkSkins'
 import { SkinPreview } from './SkinPreview'
 import { menuButtonStyle } from '../hud/TestSelectionMenu'
-import { GRAD_GOOD, GRAD_TESTS, kidTitle, coinChip, backChip } from '../hud/kidStyle'
+import { GRAD_GOOD, GRAD_TESTS, GRAD_SKINS, kidTitle, coinChip, backChip, panelCard, pill } from '../hud/kidStyle'
 
 const SKIN_EMOJI: Record<string, string> = {
   classic: '🦈',
@@ -46,11 +46,26 @@ export const SkinPicker = (props: {
 }) => {
     const { currentSkinId, coins, ownedSkins, onBuy, onPick, onClose } = props
     const [selectedId, setSelectedId] = useState(currentSkinId)
+    const [pendingBuy, setPendingBuy] = useState<SharkSkin | null>(null)
     const selected = SKINS.find(s => s.id === selectedId) ?? SKINS[0]
     const chipState = (s: SharkSkin): string =>
         selected.id === s.id ? 'selected' : (ownedSkins.includes(s.id) ? 'owned' : (coins >= s.price ? 'buy' : 'locked'))
     const chipText = (s: SharkSkin): string =>
         `${SKIN_EMOJI[s.id] ?? '🎈'} ${ownedSkins.includes(s.id) ? s.title : `🪙 ${s.price}`}`
+    const selectSkin = (s: SharkSkin) => {
+        if (ownedSkins.includes(s.id)) {
+            setSelectedId(s.id)
+            setPendingBuy(null)
+        } else {
+            setSelectedId(s.id)
+            setPendingBuy(s)
+        }
+    }
+    const confirmBuy = () => {
+        if (!pendingBuy) return
+        onBuy(pendingBuy)
+        setPendingBuy(null)
+    }
     return (
         <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -74,10 +89,7 @@ export const SkinPicker = (props: {
                 {SKINS.map(s => (
                     <button
                         key={s.id}
-                        onClick={() => {
-                            if (ownedSkins.includes(s.id)) setSelectedId(s.id)
-                            else onBuy(s)
-                        }}
+                        onClick={() => selectSkin(s)}
                         style={chipStyle(chipState(s))}
                     >
                         {chipText(s)}
@@ -85,7 +97,10 @@ export const SkinPicker = (props: {
                 ))}
             </div>
             <div style={{ display: 'flex', gap: 'clamp(8px, 1.8vh, 12px)', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
-                <button onClick={() => onPick(selected.id)} style={{
+                <button onClick={() => {
+                    if (ownedSkins.includes(selected.id)) onPick(selected.id)
+                    else setPendingBuy(selected)
+                }} style={{
                     ...menuButtonStyle,
                     background: selected && ownedSkins.includes(selected.id) ? GRAD_TESTS : GRAD_GOOD,
                     fontSize: 'clamp(14px, 3.2vh, 20px)',
@@ -96,6 +111,53 @@ export const SkinPicker = (props: {
                 </button>
                 <button onClick={onClose} style={{ ...backChip, fontSize: 'clamp(14px, 3.2vh, 20px)' }}>← Назад</button>
             </div>
+            {pendingBuy && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 60,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.65)', padding: 'clamp(12px, 3vw, 24px)'
+                }}>
+                    <div style={{
+                        ...panelCard,
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'clamp(10px, 2.4vh, 18px)',
+                        padding: 'clamp(16px, 4vh, 28px)', width: 'min(88vw, 380px)',
+                        borderColor: 'rgba(244,114,182,0.6)'
+                    }}>
+                        <h3 style={{ ...kidTitle('#f472b6'), fontSize: 'clamp(1.2rem, 4.5vh, 1.7rem)' }}>
+                            Купить скин?
+                        </h3>
+                        <p style={{ margin: 0, fontSize: 'clamp(1.3rem, 5vh, 2rem)', color: 'white', fontWeight: 'bold' }}>
+                            {SKIN_EMOJI[pendingBuy.id] ?? '🎈'} {pendingBuy.title}
+                        </p>
+                        <div style={coinChip}>🪙 {coins} → 🪙 {coins - pendingBuy.price}</div>
+                        {coins < pendingBuy.price && (
+                            <p style={{ margin: 0, color: '#f87171', fontWeight: 'bold', fontSize: 'clamp(0.9rem, 2.6vh, 1.05rem)' }}>
+                                Не хватает монет! ⚠️
+                            </p>
+                        )}
+                        <div style={{ display: 'flex', gap: 'clamp(8px, 2vw, 14px)', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            <button
+                                onClick={confirmBuy}
+                                disabled={coins < pendingBuy.price}
+                                style={{
+                                    ...pill(GRAD_SKINS),
+                                    fontSize: 'clamp(14px, 3.2vh, 18px)',
+                                    padding: 'clamp(9px, 2.2vh, 14px) clamp(20px, 5vw, 34px)',
+                                    opacity: coins < pendingBuy.price ? 0.5 : 1
+                                }}
+                            >
+                                💎 Купить за 🪙 {pendingBuy.price}
+                            </button>
+                            <button
+                                onClick={() => setPendingBuy(null)}
+                                style={{ ...backChip, fontSize: 'clamp(14px, 3.2vh, 18px)' }}
+                            >
+                                Отмена
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
