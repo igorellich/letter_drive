@@ -37,6 +37,7 @@
 - **Сериализация поедания**: `FoodManager.tsx` `canEat` раньше был `eaten.length===0` — съеденная и уже отвеченная рыбка блокировала поедание, создавая «мёртвую зону» ~1.5с. Теперь `!foodItems.some(i => i.eaten && i.right!==true && i.right!==false)` (блокирует только НЕотвеченный вопрос).
 - **Бонус-рыбка** (без вопроса, 4 шт/раунд): даёт +5 сек дайверам (`BONUS_TIME_REWARD`); награда показывается тостом `hud/RewardToast.tsx` («+5 сек! ⏰»), самопропадает ~1.6с. Грант в `Scene.tsx onEaten` через AppStateController.
 - **Дубликаты id рыбок**: `useFoodItemsGridSpawner.ts` id = `${question}__${index}` — иначе совпадающие тексты вопросов ломали `onEat` find/React keys.
+- **Монеты/счётчик дайверов «не сохранялись» в меню**: данные сохраняются в `localStorage['eat_steak']` корректно, но после сцены «Дайверы» чип `🪙` в `MainMenu` не обновлялся (App-стейт `coins` в `main.tsx` инициализировался один раз и не перечитывался), тогда как `🤿` (читается свежим `getState().diversEaten` на каждый render) обновлялся. Фикс: в `exitToMenu` перечитываем `setCoins(s.coins)`/`setOwnedSkins(s.ownedSkins)` из `AppStateController.getState()`.
 
 ## Тестирование в браузере (важное)
 - `opencode-browser` (Browser MCP) нестабилен и в середине сессии может пропасть (инструменты `browsermcp_*` станут «unavailable»). Fallback: отдельный Chrome с `--remote-debugging-port=9222 --user-data-dir=<temp>`, драйвинг по CDP через Node (global WebSocket).
