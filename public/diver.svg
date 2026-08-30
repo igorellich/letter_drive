@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#0369a1"/>
+    </linearGradient>
+  </defs>
+  <!-- background -->
+  <rect x="0" y="0" width="200" height="200" rx="44" fill="url(#bg)"/>
+  <!-- bubbles -->
+  <circle cx="48" cy="52" r="7" fill="#fff" opacity="0.9"/>
+  <circle cx="34" cy="70" r="5" fill="#fff" opacity="0.7"/>
+  <circle cx="56" cy="34" r="4" fill="#fff" opacity="0.6"/>
+  <!-- dive mask top strap goes behind head -->
+  <!-- oxygen tank (behind body) -->
+  <rect x="140" y="58" width="34" height="86" rx="17" fill="#e2e8f0" stroke="#334155" stroke-width="5"/>
+  <rect x="152" y="66" width="10" height="14" rx="5" fill="#64748b"/>
+  <!-- body (wetsuit) -->
+  <path d="M92 96 C88 118 108 128 118 118 C128 106 120 94 108 94 Z" fill="#0ea5e9" stroke="#075985" stroke-width="5"/>
+  <!-- arms -->
+  <path d="M96 104 C78 106 66 118 62 130" fill="none" stroke="#075985" stroke-width="12" stroke-linecap="round"/>
+  <!-- legs -->
+  <path d="M100 122 L98 150" stroke="#075985" stroke-width="12" stroke-linecap="round"/>
+  <path d="M114 120 L112 150" stroke="#075985" stroke-width="12" stroke-linecap="round"/>
+  <!-- fins -->
+  <path d="M84 152 C100 168 118 152 114 166 L88 168 Z" fill="#fbbf24" stroke="#b45309" stroke-width="4" stroke-linejoin="round"/>
+  <!-- head -->
+  <circle cx="96" cy="78" r="30" fill="#fde68a" stroke="#b45309" stroke-width="4"/>
+  <!-- dive mask -->
+  <path d="M76 74 C78 62 90 56 96 56 C102 56 114 62 116 74 C118 85 108 92 96 92 C84 92 74 85 76 74 Z" fill="#0f766e" stroke="#042f2e" stroke-width="5"/>
+  <path d="M82 74 C84 65 90 61 96 61 C102 61 108 65 110 74 C111 81 105 86 96 86 C87 86 81 81 82 74 Z" fill="#bae6fd"/>
+  <!-- smile -->
+  <path d="M88 88 C92 92 100 92 104 88" fill="none" stroke="#0f766e" stroke-width="3" stroke-linecap="round"/>
+</svg>

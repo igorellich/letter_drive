@@ -63,7 +63,7 @@ export const MainMenu = (props: {
       </button>
 
       <button onClick={onStartDivers} disabled={!hasDiverTime} style={bigButtonStyle('linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%)', !hasDiverTime)}>
-        <span style={{ fontSize: 'clamp(1.8rem, 7vh, 2.8rem)', lineHeight: 1.15 }}>🏄</span>
+        <img src="/diver.svg" alt="Дайвер" style={{ height: 'clamp(3.5rem, 12vh, 5.5rem)', width: 'auto', filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.45))' }} />
         <span style={{ fontSize: 'clamp(1.15rem, 3.4vh, 1.6rem)', fontWeight: 'bold' }}>Дайверы</span>
         <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
           {hasDiverTime ? `Осталось ${fmt(diversTimeLeftSec)} · 🤿 ${diversEaten}` : 'Получи время в тестах!'}
