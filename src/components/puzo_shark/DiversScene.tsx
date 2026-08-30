@@ -13,7 +13,7 @@ import { Joystick, type JoystickData } from "./Joystick"
 
 
 import { useFollowingCamera } from "./hooks/useFollowingCamera"
-import { useFoodManager, type FoodItem } from "./food/FoodManager"
+import { useFoodManager } from "./food/FoodManager"
 import { Diver } from "./food/Diver"
 import { EatFx, type EatFxHandle } from "./food/EatFx"
 import { DiverEatParticles, type DiverEatParticlesHandle } from "./food/DiverEatParticles"
@@ -48,21 +48,12 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
     const eatParticlesRef = useRef<DiverEatParticlesHandle | null>(null)
     const shakeRef = useRef<CameraShakeHandle | null>(null)
     const [coins, setCoins] = useState<number>(() => AppStateController.getState().coins);
-    const onEaten = (item: FoodItem) => {
-        const p = new THREE.Vector3()
-        item.ref?.current?.getWorldPosition(p)
-        eatFxRef.current?.burstAt(p)
-        eatParticlesRef.current?.burstAt(p)
-        shakeRef.current?.shake(0.35, 0.06)
-        eatSoundRef.current?.play()
-    }
     const divers = useFoodManager({
         sharkRef,
         sceneHeight: height,
         sceneWidth: width,
         FoodComponent: Diver,
-        questions: a,
-        onEaten
+        questions: a
     })
 
 
@@ -90,6 +81,14 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
             const item = diver.props.item;
             if (item.ref?.current) {
                 if (diver.props.item.eaten) {
+                    // Эффект поедания — здесь (а не в onEaten!): useFrame обнуляет
+                    // eaten и телепортирует дайвера в тот же кадр, поэтому колбэк
+                    // onEaten из FoodManager (ищет eaten===true) НЕ успевает сработать.
+                    const p = new THREE.Vector3()
+                    item.ref.current.getWorldPosition(p)
+                    eatFxRef.current?.burstAt(p)
+                    eatParticlesRef.current?.burstAt(p)
+                    shakeRef.current?.shake(0.35, 0.06)
                     eatSoundRef.current?.play();
                     diver.props.item.eaten = false;
                     item.ref.current.position.set(100, 100, 100)

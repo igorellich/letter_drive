@@ -23,7 +23,7 @@
 - `AppStateController.tsx`: состояние в `localStorage['eat_steak']` = `{diversEaten, diversTimeLeftSec, coins, ownedSkins}` (getState мигрирует старое хранилище, по умолчанию `coins:0`, `ownedSkins:['classic']`).
 - Кнопка «Дайверы 🏄» (`main.tsx:82`) активна **только** если `diversTimeLeftSec > 0`. Свежее время можно подсеять прямо в localStorage.
 - `DiversScene.tsx`: дайверы убегают (target-пойнты + lerp), при попадании в радиус съедания (≈0.8) `diversEaten++`, дайвер телепортируется в (100,100,100) на ~1с.
-- Поедание дайвера (2026-08-30): кроме взрыва `EatFx` — ещё и брызги частиц `food/DiverEatParticles.tsx` (THREE.Points, 80 частиц orange/cyan, разлёт + затухание ~0.6с). Вызывается через `eatParticlesRef.burstAt(p)` в `onEaten`. Счётчик съеденных дайверов в сцене и в `MainMenu.tsx` — эмодзи 🤿 (не 🐟).
+- Поедание дайвера (2026-08-30): кроме взрыва `EatFx` — ещё и брызги частиц `food/DiverEatParticles.tsx` (THREE.Points, 80 частиц orange/cyan, разлёт + затухание ~0.6с). Вызывается через `eatParticlesRef.burstAt(p)` в **useFrame** DiversScene (в блоке обработки `eaten`), а НЕ в `onEaten`: useFrame в тот же кадр обнуляет `eaten` и телепортирует дайвера, поэтому колбэк `onEaten` из FoodManager (ищет `eaten===true`) не успевает сработать — награды/эффекта не было. Счётчик съеденных дайверов в сцене и в `MainMenu.tsx` — эмодзи 🤿 (не 🐟).
 
 ## Экономика (2026-08-29): монеты и покупка скинов
 - Цепочка: тест → время дайверов → ловля дайверов → монеты → покупка скинов.
