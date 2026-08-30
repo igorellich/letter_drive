@@ -14,7 +14,11 @@ const overlayStyle: CSSProperties = {
     background: 'rgba(0, 15, 25, 0.55)',
     padding: 0,
     width: '100vw',
-    height: '100vh'
+    height: '100vh',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    WebkitTouchCallout: 'none',
+    WebkitTapHighlightColor: 'transparent'
 }
 
 const questionCard: CSSProperties = {
@@ -43,7 +47,15 @@ const answerButton = (fill: string, dimmed: boolean): CSSProperties => ({
     textShadow: '0 2px 4px rgba(0,0,0,0.55)',
     opacity: dimmed ? 0.45 : 1,
     cursor: 'pointer',
-    transition: 'transform 0.15s'
+    transition: 'transform 0.15s',
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    fontFamily: 'inherit',
+    userSelect: 'none',
+    WebkitUserSelect: 'none',
+    WebkitTouchCallout: 'none',
+    WebkitTapHighlightColor: 'transparent',
+    touchAction: 'manipulation'
 })
 
 export const QuestionLabel = (props: { foodItem: FoodItem & { question: IQuestion }, onSelectAnswer: (item: FoodItem) => void, onGraded?: (correct: boolean) => void }) => {
@@ -79,10 +91,10 @@ export const QuestionLabel = (props: { foodItem: FoodItem & { question: IQuestio
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(8px, 2vh, 14px)', alignItems: 'center', width: 'min(80vw, 520px)' }}>
             {props.foodItem.question.variants.map((v, i) => (
-                <div key={v} onClick={() => !answered && onSelectAnswer(v)}
+                <button key={v} type="button" onClick={() => !answered && onSelectAnswer(v)}
                     style={answerButton(answerFill(v, i), answered && props.foodItem.question.answer.includes(v) === false && v !== givenAnswer)}>
                     {answered && props.foodItem.question.answer.includes(v) ? '✅ ' : ''}{answered && v === givenAnswer && !props.foodItem.question.answer.includes(v) ? '❌ ' : ''}{v}
-                </div>
+                </button>
             ))}
             {answered && (
                 <div style={{
