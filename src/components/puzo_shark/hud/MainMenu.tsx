@@ -66,7 +66,7 @@ export const MainMenu = (props: {
         <span style={{ fontSize: 'clamp(1.8rem, 7vh, 2.8rem)', lineHeight: 1.15 }}>🏄</span>
         <span style={{ fontSize: 'clamp(1.15rem, 3.4vh, 1.6rem)', fontWeight: 'bold' }}>Дайверы</span>
         <span style={{ fontSize: 'clamp(0.7rem, 2vh, 0.85rem)', opacity: 1, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-          {hasDiverTime ? `Осталось ${fmt(diversTimeLeftSec)} · 🐟 ${diversEaten}` : 'Получи время в тестах!'}
+          {hasDiverTime ? `Осталось ${fmt(diversTimeLeftSec)} · 🤿 ${diversEaten}` : 'Получи время в тестах!'}
         </span>
       </button>
 

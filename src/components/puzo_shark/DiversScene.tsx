@@ -16,6 +16,7 @@ import { useFollowingCamera } from "./hooks/useFollowingCamera"
 import { useFoodManager, type FoodItem } from "./food/FoodManager"
 import { Diver } from "./food/Diver"
 import { EatFx, type EatFxHandle } from "./food/EatFx"
+import { DiverEatParticles, type DiverEatParticlesHandle } from "./food/DiverEatParticles"
 import { CameraShakeRig, type CameraShakeHandle } from "./hooks/useCameraShake"
 import { TimerScreen } from "./hud/TimerSceen"
 import { coinChip } from "./hud/kidStyle"
@@ -44,12 +45,14 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
 
     const eatSoundRef = useRef<THREE.PositionalAudio | null>(null);
     const eatFxRef = useRef<EatFxHandle | null>(null)
+    const eatParticlesRef = useRef<DiverEatParticlesHandle | null>(null)
     const shakeRef = useRef<CameraShakeHandle | null>(null)
     const [coins, setCoins] = useState<number>(() => AppStateController.getState().coins);
     const onEaten = (item: FoodItem) => {
         const p = new THREE.Vector3()
         item.ref?.current?.getWorldPosition(p)
         eatFxRef.current?.burstAt(p)
+        eatParticlesRef.current?.burstAt(p)
         shakeRef.current?.shake(0.35, 0.06)
         eatSoundRef.current?.play()
     }
@@ -181,7 +184,7 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
                                     fontSize: 'clamp(0.85rem, 2.4vh, 1.05rem)', fontWeight: 'bold',
                                     textShadow: '0 1px 4px rgba(0,0,0,0.6)'
                                 }}>
-                                    🐟 {AppStateController.getState().diversEaten}
+                                    🤿 {AppStateController.getState().diversEaten}
                                 </div>
                             </div>
                         </div></>}
@@ -210,6 +213,7 @@ export const DiversScene = ({ joystickData, onBack, freeze, height, width, skin 
                 <PositionalAudio ref={eatSoundRef} url="/music/crunch.ogg" distance={50} loop={false} />
             </Suspense>
             <EatFx handleRef={eatFxRef} />
+            <DiverEatParticles handleRef={eatParticlesRef} />
             <SeaSchool sceneWidth={width} sceneHeight={height} />
             <WaterPlane height={height} width={width} />
         </>
