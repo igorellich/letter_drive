@@ -79,6 +79,7 @@ export const SeaCreature: React.ComponentType<{
   const tmpV = useRef(new THREE.Vector3())
   const tmpQ = useRef(new THREE.Quaternion())
   const faceQ = useRef(new THREE.Quaternion())
+  const zAxis = useRef(new THREE.Vector3(0, 0, 1))
   const bobPhase = useRef(hashStr(item.id) % 7)
 
   useEffect(() => {
@@ -144,18 +145,28 @@ export const SeaCreature: React.ComponentType<{
     const halfW = sceneWidth / 2 - 0.5
     const halfH = sceneHeight / 2 - 0.5
     let target = wanderTarget.current
-    let ease = 1.2
+
+    // Плавное отталкивание от акулы: без жёсткого порога (который флапал
+    // on/off и вызывал «тряску»), а с мягким затуханием по дистанции.
+    // Чем ближе акула — тем сильнее рыбка смещается в противоположную сторону.
     if (sharkRef?.current) {
       sharkRef.current.getWorldPosition(fleePos.current)
-      const dist = fleePos.current.distanceTo(g.position)
-      if (dist < 1.3) {
-        tmpV.current.subVectors(g.position, fleePos.current).setZ(0)
-        if (tmpV.current.length() < 0.01) tmpV.current.set(1, 0, 0)
-        tmpV.current.normalize().multiplyScalar(2.5).add(g.position)
+      tmpV.current.subVectors(g.position, fleePos.current).setZ(0)
+      const dist = tmpV.current.length()
+      const maxDist = 1.6   // радиус, с которого начинается страх
+      const minDist = 0.5   // мертвая зона (уже совсем рядом)
+      const push = dist > minDist
+        ? Math.min(1, (maxDist - dist) / (maxDist - minDist))
+        : 1
+      if (push > 0) {
+        if (tmpV.current.lengthSq() < 0.001) tmpV.current.set(1, 0, 0)
+        tmpV.current.normalize().multiplyScalar(2.5 * push).add(g.position)
         tmpV.current.x = THREE.MathUtils.clamp(tmpV.current.x, -halfW, halfW)
         tmpV.current.y = THREE.MathUtils.clamp(tmpV.current.y, -halfH, halfH)
-        target = tmpV.current
-        ease = 0.5
+        // Смешиваем цель побега с текущей wander-целью, чтобы уход был
+        // плавным и не дёргался при переключении между целями.
+        wanderTarget.current.lerp(tmpV.current, 0.25)
+        target = wanderTarget.current
       }
     }
     if (g.position.distanceTo(target) < 0.7) {
@@ -166,12 +177,13 @@ export const SeaCreature: React.ComponentType<{
       )
       target = wanderTarget.current
     }
+    const ease = 1.2
     g.position.lerp(target, Math.min(ease, delta * ease))
 
     tmpV.current.subVectors(target, g.position)
     if (tmpV.current.length() > 0.05) {
       const angle = Math.atan2(tmpV.current.x, tmpV.current.y)
-      faceQ.current.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -angle)
+      faceQ.current.setFromAxisAngle(zAxis.current, -angle)
       tmpQ.current.slerpQuaternions(faceQ.current, g.quaternion, 0.08)
       g.quaternion.copy(tmpQ.current)
     }
